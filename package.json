@@ -1,0 +1,23 @@
+{
+  "name": "amen",
+  "version": "0.0.0",
+  "description": "experimental successor to testify",
+  "main": "lib/amen.js",
+  "scripts": {
+    "prepublish": "coffee -o lib/ -c src/*.coffee",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/pandastrike/amen.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pandastrike/amen/issues"
+  },
+  "homepage": "https://github.com/pandastrike/amen",
+  "dependencies": {
+    "colors": "^0.6.2"
+  }
+}
