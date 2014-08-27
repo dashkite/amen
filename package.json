@@ -1,6 +1,6 @@
 {
   "name": "amen",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "experimental successor to testify",
   "main": "lib/amen.js",
   "scripts": {

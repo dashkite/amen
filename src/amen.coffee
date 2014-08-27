@@ -13,6 +13,8 @@ colors = require "colors"
 
 class Context
 
+  @pending: 0
+
   constructor: (@description, @parent) ->
     @kids = []
 
@@ -74,6 +76,8 @@ class Context
 module.exports = do ->
 
   process.on "exit", ->
+    if Context.pending > 0
+      console.error "warning: #{Context.pending} tests still pending"
     root.summarize()
 
   root = new Context()
