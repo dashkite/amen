@@ -1,76 +1,72 @@
-#
-# This is a bit of an experiment. I love the simplicity of the Testify
-# interface. However, I wanted to see if I could simplify the implementation
-# to make it a bit easier to hack on. It seemed to me that a stack-based
-# approach using closures would be easier to reason about than the FSA
-# model that Testify uses. At < 100 LoC, I think so far the results are
-# encouraging, although Testify has a lot more features.
-#
-
-assert = require "assert"
 colors = require "colors"
 {inspect} = require "util"
+{promise, async} = require "./async-helpers"
 
 class Context
 
   @pending: 0
 
+  @root = null
+
+  @ready = false
+
+  @start: -> @pending++
+
+  @finish: ->
+    @pending--
+    @resolve() if @ready && @pending == 0
+
+  @describe: (description, fn) ->
+    promise (resolve) ->
+      Context.resolve = resolve
+      fn(new Context(description))
+      Context.ready = true
+
   constructor: (@description, @parent) ->
+    Context.root ?= @
+    @parent?.kids.push @
     @kids = []
 
-  push: (description) ->
-    context = new Context(description, @)
-    @kids.push(context)
-    context
-
-
-  pop: -> @parent
-
   describe: (description, fn) ->
-    fn(@push description)
+    context = new Context description, @
+    fn context
 
   test: (description, fn) ->
-    context = @push (description)
-    try
-      context.start()
-      if fn.length > 0
-        do ->
-          fn(context)
-      else
+    context = new Context description, @
+    Context.pending++
+    if fn.constructor.name == "GeneratorFunction"
+      fn = async fn
+      fn(context)
+      .then -> context.pass()
+      .catch (error) -> context.fail error
+    else
+      try
         fn()
         context.pass()
-    catch error
-      context.fail(error)
+      catch error
+        context.fail error
 
-  start: -> Context.pending++
-  finish: -> Context.pending--
-
-  pass: (assert) ->
-    try
-      assert?()
-      @result = true
-    catch error
-      @fail error
-    @finish()
+  pass: ->
+    @result = true
+    Context.finish()
 
   fail: (error) ->
+    @result = true
     @error = error
-    @result = false
-    @finish()
+    Context.finish()
 
   report: ->
-    if @result?
+
+    console.log if @result?
       if @error?
-        console.log "#{@description} #{inspect(@error)}".red
+        "#{@description} #{inspect(@error)}".red
       else
         color = (if @result then "green" else "yellow")
-        console.log @description[color]
+        @description[color]
     else if @description?
-      console.log @description.bold.green
+      @description.bold.green
 
-  summarize: ->
-    @report()
-    kid.summarize() for kid in @kids
+    kid.report() for kid in @kids
 
 
 module.exports = do ->
@@ -78,6 +74,6 @@ module.exports = do ->
   process.on "exit", ->
     if Context.pending > 0
       console.error "warning: #{Context.pending} tests still pending"
-    root.summarize()
+    Context.root?.report()
 
-  root = new Context()
+  Context
