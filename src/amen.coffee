@@ -1,83 +1,86 @@
-#
-# This is a bit of an experiment. I love the simplicity of the Testify
-# interface. However, I wanted to see if I could simplify the implementation
-# to make it a bit easier to hack on. It seemed to me that a stack-based
-# approach using closures would be easier to reason about than the FSA
-# model that Testify uses. At < 100 LoC, I think so far the results are
-# encouraging, although Testify has a lot more features.
-#
-
-assert = require "assert"
 colors = require "colors"
-{inspect} = require "util"
+{promise, lift} = require "when"
+generator = require "when/generator"
+async = generator.lift
+{call} = generator
 
 class Context
 
-  @pending: 0
+  # Some internal bookkeeping to keep track of outstanding tests
+  pending = 0
+  resolve = null
+  wait = ->
+    promise (_resolve) ->
+      resolve = _resolve
+      resolve() unless pending > 0
+
+  start = -> ++pending
+  finish = -> resolve() if --pending == 0
+
+  # Main entry point for using Amen
+  @describe: (description, fn) ->
+    call =>
+      @root = new Context description
+      fn @root
+      yield wait()
+      @root.report()
 
   constructor: (@description, @parent) ->
+    @parent?.kids.push @
     @kids = []
 
-  push: (description) ->
-    context = new Context(description, @)
-    @kids.push(context)
-    context
-
-
-  pop: -> @parent
-
   describe: (description, fn) ->
-    fn(@push description)
+    fn(new Context(description, @))
 
   test: (description, fn) ->
-    context = @push (description)
-    try
-      context.start()
-      if fn.length > 0
-        do ->
-          fn(context)
+    (new Context description, @).run fn
+
+  # This looks like it should be refactored, but it's a bit tricky because
+  # the call to finish must happen, regardless of whether the test passes.
+  # And we can't call start/finish for non-async tests because we use
+  # a simple counter instead of queuing up all the async tests in a group.
+  # Basically, the simplicity of the counter pushes the complexity here.
+  run: (fn) ->
+    if fn?
+      if fn.constructor.name == "GeneratorFunction"
+        call =>
+          start()
+          try
+            yield (call fn, @)
+            @pass() unless @result?
+          catch error
+            @fail error
+          finish()
       else
-        fn()
-        context.pass()
-    catch error
-      context.fail(error)
+        try
+          fn @
+          @pass() unless @result?
+        catch error
+          @fail error
+    else
+      context.fail()
 
-  start: -> Context.pending++
-  finish: -> Context.pending--
-
-  pass: (assert) ->
-    try
-      assert?()
-      @result = true
-    catch error
-      @fail error
-    @finish()
+  pass: ->
+    @result = true
 
   fail: (error) ->
-    @error = error
+    console.error error.stack if error?.stack?
     @result = false
-    @finish()
+    @error = error
 
-  report: ->
-    if @result?
-      if @error?
-        console.log "#{@description} #{inspect(@error)}".red
+  report: (indent="") ->
+    console.log indent,
+
+      if @result?
+        if @error?
+          @description.red
+        else if @result
+          @description.green
+        else
+          @description.yellow
       else
-        color = (if @result then "green" else "yellow")
-        console.log @description[color]
-    else if @description?
-      console.log @description.bold.green
+        @description.bold.green
 
-  summarize: ->
-    @report()
-    kid.summarize() for kid in @kids
+    (kid.report (indent + "  ")) for kid in @kids
 
-
-module.exports = do ->
-
-  process.on "exit", ->
-    if Context.pending > 0
-      console.error "warning: #{Context.pending} tests still pending"
-    root.summarize()
-
-  root = new Context()
+module.exports = Context
