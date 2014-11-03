@@ -73,7 +73,7 @@ class Context
 
       if @result?
         if @error?
-          @description.red
+          "#{@description} [#{@error}]".red
         else if @result
           @description.green
         else

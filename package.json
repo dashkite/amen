@@ -1,6 +1,6 @@
 {
   "name": "amen",
-  "version": "1.0.0-alpha-01",
+  "version": "1.0.0-alpha-02",
   "description": "A simple test suite for use with promises and generators",
   "keywords": [
     "test",
@@ -32,6 +32,9 @@
   "dependencies": {
     "colors": "^0.6.2",
     "when": "^3.4.6"
+  },
+  "devDependencies": {
+    "coffee-script": "git://github.com/jashkenas/coffeescript.git#4f82e59"
   },
   "engine": "node >= 0.11.x"
 }
