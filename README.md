@@ -48,4 +48,6 @@ The `describe` method takes an initializer function that allows you to define th
 
 The basic intuition for Amen is similar to that of [Testify][]: that test frameworks should basically get out of the way and let you write clear and simple tests. There's no DSL: `assert` is just fine&mdash;and often clearer. There are no mocks because mocking just tells your test suite what it wants to hear. And asynchronous testing should be as simple as possible, but no simpler.
 
+[Testify]:https://github.com/pandastrike/testify
+
 With the standardization of promises and generators in ES6, we had an opportunity to make asynchronous testing even simpler. As you can see in the above example, it's now just a matter of using `yield` (at least in CoffeeScript&mdash;in JavaScript, you also need to use the generator function syntax, but that's still very simple).
