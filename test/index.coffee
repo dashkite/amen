@@ -25,3 +25,5 @@ amen.describe "Using Amen to test itself", (context) ->
     context.test "An asynchronous test", -> yield good()
 
     context.test "A failing asynchronous test", -> yield bad()
+
+  context.test "A pending test"

@@ -58,7 +58,7 @@ class Context
         catch error
           @fail error
     else
-      context.fail()
+      @fail()
 
   pass: ->
     @result = true

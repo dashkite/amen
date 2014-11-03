@@ -1,6 +1,6 @@
 {
   "name": "amen",
-  "version": "1.0.0-alpha-02",
+  "version": "1.0.0-alpha-03",
   "description": "A simple test suite for use with promises and generators",
   "keywords": [
     "test",
