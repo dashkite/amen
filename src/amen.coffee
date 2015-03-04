@@ -6,29 +6,32 @@ async = generator.lift
 
 class Context
 
-  # Some internal bookkeeping to keep track of outstanding tests
-  pending = 0
-  resolve = null
-  wait = ->
-    promise (_resolve) ->
-      resolve = _resolve
-      resolve() unless pending > 0
-
-  start = -> ++pending
-  finish = -> resolve() if --pending == 0
-
-  # Main entry point for using Amen
   @describe: (description, fn) ->
-    call =>
-      @root = new Context description
-      fn @root
-      yield wait()
-      @root.report()
+    (new Context description)._run fn
 
   constructor: (@description, @parent) ->
     @parent?.kids.push @
     @kids = []
+    @root = @parent?.root || @
 
+  _run: (fn) ->
+    call =>
+      @pending = 0
+      @resolve = null
+      fn @
+      yield @wait()
+      @report()
+
+
+  # Some internal bookkeeping to keep track of outstanding tests
+  wait: ->
+    promise (@resolve) =>
+      @resolve() unless @pending > 0
+
+  start: -> ++@pending
+  finish: -> @resolve() if --@pending == 0
+
+  # Main entry point for using Amen
   describe: (description, fn) ->
     fn(new Context(description, @))
 
@@ -44,24 +47,24 @@ class Context
     if fn?
       if fn.constructor.name == "GeneratorFunction"
         call =>
-          start()
+          @root.start()
           try
             yield (call fn, @)
-            @pass() unless @result?
+            @pass()
           catch error
             @fail error
-          finish()
+          @root.finish()
       else
         try
           fn @
-          @pass() unless @result?
+          @pass()
         catch error
           @fail error
     else
       @fail()
 
   pass: ->
-    @result = true
+    @result ?= true
 
   fail: (error) ->
     console.error error.stack if error?.stack?
