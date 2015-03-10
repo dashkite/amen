@@ -15,21 +15,19 @@ class Context
     @root = @parent?.root || @
 
   _run: (fn) ->
-    call =>
-      @pending = 0
-      @resolve = null
-      fn @
-      yield @wait()
-      @report()
-
-
-  # Some internal bookkeeping to keep track of outstanding tests
-  wait: ->
-    promise (@resolve) =>
-      @resolve() unless @pending > 0
+    self = @
+    call ->
+      self.pending = 0
+      yield promise (resolve) ->
+        self.resolve = resolve
+        fn self
+        resolve() if self.pending == 0
+      self.report()
 
   start: -> ++@pending
-  finish: -> @resolve() if --@pending == 0
+  finish: ->
+    --@pending
+    @resolve() if @pending == 0
 
   # Main entry point for using Amen
   describe: (description, fn) ->
@@ -46,14 +44,15 @@ class Context
   run: (fn) ->
     if fn?
       if fn.constructor.name == "GeneratorFunction"
-        call =>
-          @root.start()
+        self = @
+        self.root.start()
+        call ->
           try
-            yield (call fn, @)
-            @pass()
+            yield (call fn, self)
+            self.pass()
           catch error
-            @fail error
-          @root.finish()
+            self.fail error
+          self.root.finish()
       else
         try
           fn @
