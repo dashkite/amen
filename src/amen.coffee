@@ -20,7 +20,10 @@ class Context
       self.pending = 0
       yield promise (resolve) ->
         self.resolve = resolve
-        fn self
+        try
+          fn self
+        catch error
+          console.error error.stack if error?.stack?
         resolve() if self.pending == 0
       self.report()
 
@@ -45,8 +48,8 @@ class Context
     if fn?
       if fn.constructor.name == "GeneratorFunction"
         self = @
-        self.root.start()
         call ->
+          self.root.start()
           try
             yield (call fn, self)
             self.pass()
@@ -66,7 +69,10 @@ class Context
     @result ?= true
 
   fail: (error) ->
-    console.error error.stack if error?.stack?
+    if error?
+      assert = require "assert"
+      unless error instanceof assert.AssertionError
+        console.error if error.stack? then error.stack else "#{error}"
     @result = false
     @error = error
 
