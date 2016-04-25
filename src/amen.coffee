@@ -1,94 +1,95 @@
+global.$p ?= -> console.log arguments...
+
+assert = require "assert"
 colors = require "colors"
-{promise, lift} = require "when"
-generator = require "when/generator"
-async = generator.lift
-{call} = generator
+{empty, promise, isPromise, lift, async, include, isType} = require "fairmont"
 
-class Context
+Context =
 
-  @describe: (description, fn) ->
-    (new Context description)._run fn
+  create: (description, parent) ->
 
-  constructor: (@description, @parent) ->
-    @parent?.kids.push @
-    @kids = []
-    @root = @parent?.root || @
+    context = {description, parent, kids: [], root: parent.root}
 
-  _run: (fn) ->
-    self = @
-    call ->
-      self.pending = 0
-      yield promise (resolve) ->
-        self.resolve = resolve
-        try
-          fn self
-        catch error
-          console.error error.stack if error?.stack?
-        resolve() if self.pending == 0
-      self.report()
+    include context,
 
-  start: -> ++@pending
-  finish: ->
-    --@pending
-    @resolve() if @pending == 0
+      test: async (description, f) ->
+        parent = context
+        g = (async f) if f?
+        child = Context.create description, parent
+        parent.kids.push child
 
-  # Main entry point for using Amen
-  describe: (description, fn) ->
-    fn(new Context(description, @))
-
-  test: (description, fn) ->
-    (new Context description, @).run fn
-
-  # This looks like it should be refactored, but it's a bit tricky because
-  # the call to finish must happen, regardless of whether the test passes.
-  # And we can't call start/finish for non-async tests because we use
-  # a simple counter instead of queuing up all the async tests in a group.
-  # Basically, the simplicity of the counter pushes the complexity here.
-  run: (fn) ->
-    if fn?
-      if fn.constructor.name == "GeneratorFunction"
-        self = @
-        call ->
-          self.root.start()
+        if g?
+          child.start()
           try
-            yield (call fn, self)
-            self.pass()
+            yield g child
+            child.pass()
           catch error
-            self.fail error
-          self.root.finish()
-      else
-        try
-          fn @
-          @pass()
-        catch error
-          @fail error
-    else
-      @fail()
+            child.fail error
 
-  pass: ->
-    @result ?= true
+      describe: -> context.test arguments...
 
-  fail: (error) ->
-    if error?
-      assert = require "assert"
-      unless error instanceof assert.AssertionError
-        console.error if error.stack? then error.stack else "#{error}"
-    @result = false
-    @error = error
+      pass: ->
+        context.finish()
+        context.result = true
 
-  report: (indent="") ->
+      fail: (error) ->
+        context.finish()
+        context.result = false
+        if error?
+          context.error = error
+          if !(isType assert.AssertionError, error)
+            console.error error.stack
+
+      start: context.root.start
+
+      finish: context.root.finish
+
+  describe: (description, f) ->
+    promise (resolve, reject) ->
+
+      try
+
+        pending = 0
+        root =
+
+          start: -> ++pending
+
+          finish: ->
+            setImmediate ->
+              if --pending == 0
+                resolve()
+                report root.context
+
+        root.context = Context.create description, {root}
+        f root.context
+
+      catch error
+        console.error error.stack
+        report root.context
+
+  report: report = (context, indent = "") ->
+
+    {description, result, error, parent, root, kids} = context
+
     console.log indent,
 
-      if @result?
-        if @error?
-          "#{@description} [#{@error}]".red
-        else if @result
-          @description.green
-        else
-          @description.yellow
-      else
-        @description.bold.green
+      if result?
 
-    (kid.report (indent + "  ")) for kid in @kids
+        if result
+          description.green
+        else if error?
+          "#{description} #{error}".red
+        else
+          description.red
+
+      else
+
+        if empty kids
+          description.yellow
+        else
+          description.green
+
+    indent += "  "
+    (report kid, indent) for kid in kids
 
 module.exports = Context

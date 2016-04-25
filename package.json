@@ -1,6 +1,6 @@
 {
   "name": "amen",
-  "version": "1.0.0-alpha-06",
+  "version": "1.0.0",
   "description": "A simple test suite for use with promises and generators",
   "keywords": [
     "test",
@@ -10,9 +10,10 @@
   ],
   "main": "lib/amen.js",
   "scripts": {
-    "prepublish": "coffee --nodejs --harmony -o lib/ -c src/*.*coffee",
-    "test": "coffee --nodejs --harmony test/index.coffee",
-    "watch": "coffee --nodejs --harmony -o lib/ -cw src/*.*coffee"
+    "test": "coffee test/index.coffee",
+    "watch": "coffee -o lib/ -cw src/*.*coffee",
+    "prepublish": "coffee -o lib/ -c src/*.*coffee",
+    "postpublish": "(node_modules/.bin/json -f package.json version | xargs -I version git tag -am version version) && git push --tags"
   },
   "repository": {
     "type": "git",
@@ -31,7 +32,7 @@
   "homepage": "https://github.com/pandastrike/amen",
   "dependencies": {
     "colors": "^0.6.2",
-    "when": "^3.4.6"
+    "fairmont": "^1.0.0"
   },
   "devDependencies": {
     "coffee-script": "git://github.com/jashkenas/coffeescript.git#4f82e59"
