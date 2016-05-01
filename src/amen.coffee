@@ -2,7 +2,12 @@ global.$p ?= -> console.log arguments...
 
 assert = require "assert"
 colors = require "colors"
-{empty, promise, isPromise, lift, async, include, isType} = require "fairmont"
+F = require "fairmont"
+{empty, include} = F
+{isType, isPromise, isGeneratorFunction} = F
+{promise, lift, async, call} = F
+
+hoist = (f) -> if isGeneratorFunction f then async f else f
 
 Context =
 
@@ -12,19 +17,20 @@ Context =
 
     include context,
 
-      test: async (description, f) ->
+      test: (description, f) ->
+
         parent = context
-        g = (async f) if f?
         child = Context.create description, parent
         parent.kids.push child
 
-        if g?
+        if (g = hoist f)?
           child.start()
-          try
-            yield g child
-            child.pass()
-          catch error
-            child.fail error
+          call ->
+            try
+              yield g child
+              child.pass()
+            catch error
+              child.fail error
 
       describe: -> context.test arguments...
 
@@ -45,6 +51,7 @@ Context =
       finish: context.root.finish
 
   describe: (description, f) ->
+
     promise (resolve, reject) ->
 
       try
