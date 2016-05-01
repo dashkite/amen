@@ -35,7 +35,8 @@
     "fairmont": "^1.0.0"
   },
   "devDependencies": {
-    "coffee-script": "git://github.com/jashkenas/coffeescript.git#4f82e59"
+    "coffee-script": "git://github.com/jashkenas/coffeescript.git#4f82e59",
+    "json": "^9.0.3"
   },
   "engine": "node >= 0.11.x"
 }
