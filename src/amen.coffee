@@ -43,8 +43,8 @@ Context =
         context.result = false
         if error?
           context.error = error
-          if !(isType assert.AssertionError, error)
-            console.error error.stack
+          unless isType assert.AssertionError, error
+            context.root.errors.push error
 
       start: context.root.start
 
@@ -65,16 +65,20 @@ Context =
             setImmediate ->
               if --pending == 0
                 resolve()
-                report root.context
+                report root
+
+          errors: []
 
         root.context = Context.create description, {root}
         f root.context
 
       catch error
         console.error error.stack
-        report root.context
+        report root
 
-  report: report = (context, indent = "") ->
+report = ({context, errors}) ->
+
+  do _report = (context, indent = "") ->
 
     {description, result, error, parent, root, kids} = context
 
@@ -97,6 +101,11 @@ Context =
           description.green
 
     indent += "  "
-    (report kid, indent) for kid in kids
+    (_report kid, indent) for kid in kids
+
+  setImmediate ->
+    console.error "\n" + error.stack for error in errors
+
+
 
 module.exports = Context
