@@ -36,7 +36,7 @@
   "homepage": "https://github.com/pandastrike/amen",
   "dependencies": {
     "colors": "^0.6.2",
-    "fairmont": "1.1.x"
+    "fairmont": "^1.1.4"
   },
   "devDependencies": {
     "coffee-script": "git://github.com/jashkenas/coffeescript.git#4f82e59",
