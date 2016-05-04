@@ -36,10 +36,10 @@
   "homepage": "https://github.com/pandastrike/amen",
   "dependencies": {
     "colors": "^0.6.2",
-    "fairmont": "^1.1.5"
+    "fairmont": "^1.1.6"
   },
   "devDependencies": {
-    "coffee-script": "git://github.com/jashkenas/coffeescript.git#4f82e59",
+    "coffee-script": "^1.10.0",
     "json": "^9.0.3"
   },
   "engine": "node >= 6.0.0"
