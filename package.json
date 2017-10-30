@@ -1,12 +1,11 @@
 {
   "name": "amen",
-  "version": "1.0.6",
-  "description": "A simple test suite for use with promises and generators",
+  "version": "2.0",
+  "description": "A simple test library for use with async functions",
   "keywords": [
     "test",
     "asynchronous",
-    "promises",
-    "generators"
+    "promises"
   ],
   "files": [
     "lib/",
