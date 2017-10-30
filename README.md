@@ -37,6 +37,8 @@ do ->
 
 This would generate output like this:
 
+![Screen shot of output.](./docs/screen-shot.png)
+
 ## Installation
 
 ```
