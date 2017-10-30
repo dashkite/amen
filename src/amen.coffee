@@ -1,111 +1,44 @@
-global.$p ?= -> console.log arguments...
+require "colors"
 
-assert = require "assert"
-colors = require "colors"
-F = require "fairmont"
-{empty, include} = F
-{isType, isPromise, isGeneratorFunction} = F
-{promise, lift, async, call} = F
+timeout = (t, promise) ->
+  timer = new Promise (_, reject) ->
+    setTimeout (-> reject new Error "Async test timed out"), t
+  Promise.race [ timer, promise ]
 
-hoist = (f) -> if isGeneratorFunction f then async f else f
-
-Context =
-
-  create: (description, parent) ->
-
-    context = {description, parent, kids: [], root: parent.root}
-
-    include context,
-
-      test: (description, f) ->
-
-        parent = context
-        child = Context.create description, parent
-        parent.kids.push child
-
-        if (g = hoist f)?
-          child.start()
-          call ->
-            try
-              yield g child
-              child.pass()
-            catch error
-              child.fail error
-
-      describe: -> context.test arguments...
-
-      pass: ->
-        context.finish()
-        context.result = true
-
-      fail: (error) ->
-        context.finish()
-        context.result = false
-        if error?
-          context.error = error
-          unless isType assert.AssertionError, error
-            context.root.errors.push error
-
-      start: context.root.start
-
-      finish: context.root.finish
-
-  describe: (description, f) ->
-
-    promise (resolve, reject) ->
-
+# TODO: use explicit result objects, instead of true | Error | undefined
+test = (description, definition) ->
+  if definition?
+    if Array.isArray definition
+      # TODO: include error/timeout/pending count in result object
+      [description, (await result for result in definition) ]
+    else if definition.call?
       try
-
-        pending = 0
-        root =
-
-          start: -> ++pending
-
-          finish: ->
-            setImmediate ->
-              if --pending == 0
-                resolve()
-                report root
-
-          errors: []
-
-        root.context = Context.create description, {root}
-        f root.context
-
+        await timeout 1000, definition()
+        [ description, true ]
       catch error
-        console.error error.stack
-        report root
+        [ description, error ]
+    else
+      [ description, (new Error "Invalid test definition") ]
+  else
+    [ description, undefined ]
 
-report = ({context, errors}) ->
-
-  do _report = (context, indent = "") ->
-
-    {description, result, error, parent, root, kids} = context
-
+# TODO: add error counts for groups
+# TODO: groups with failing/pending tests should be red
+print = ([description, result], indent="") ->
+  if Array.isArray result
+    console.log indent, description.blue
+    for test in result
+      print test, (indent + "  ")
+  else
     console.log indent,
-
       if result?
-
-        if result
+        if result == true
           description.green
-        else if error?
-          "#{description} #{error}".red
+        else if result.message? and result.message != ""
+          "#{description.red} (#{result.message?.red})"
         else
           description.red
-
       else
+        "Pending test".yellow
 
-        if empty kids
-          description.yellow
-        else
-          description.green
-
-    indent += "  "
-    (_report kid, indent) for kid in kids
-
-  setImmediate ->
-    console.error "\n" + error.stack for error in errors
-
-
-
-module.exports = Context
+export {test, print}

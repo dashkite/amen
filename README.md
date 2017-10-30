@@ -1,51 +1,59 @@
 # Amen
 
-Amen is a very simple testing framework utilizing promises and generators for asynchronous testing.
+Amen is a simple, flexible testing library that supports async functions.
 
 ```coffeescript
-amen.describe "My simple test suite", (context) ->
+import {print, test} from "amen"
 
-  context.describe "My synchronous tests", (context) ->
+assert = require "assert"
 
-  context.test "A simple test", -> assert true
+# a few async functions to test
 
-  context.test "A nested test", (context) ->
+good = ->
+  new Promise (resolve) ->
+    setTimeout resolve, 100
 
-    context.test "I'm nested!", -> assert true
+bad = ->
+  new Promise (_, reject) ->
+    setTimeout (-> reject new Error "oops"), 100
 
-  context.test "A failing test", -> assert false
+never = -> new Promise ->
 
-  context.describe "My asynchronous tests", (context) ->
-
-    # Two very contrived async functions
-
-    good = -> promise (resolve) -> setTimeout resolve, 100
-
-    bad = ->
-      promise (resolve, reject) ->
-        setTimeout (-> reject (new Error "oops")), 100
-
-    context.test "An asynchronous test", -> yield good()
-
-    context.test "A failing asynchronous test", -> yield bad()
+do ->
+  print await test "Using Amen to test itself", [
+    test "A simple test", -> assert true
+    test "A nested test", [
+      test "I'm nested", -> assert true
+    ]
+    test "A failing test", -> assert false
+    test "A nested group of async tests", [
+      test "An async test", -> await good()
+      test "A failing async test", -> await bad()
+      test "An async test that never resolves", -> await never()
+    ]
+    test "A pending test"
+  ]
 ```
+
+This would generate output like this:
 
 ## Installation
 
 ```
-npm install amen
+npm i -D amen
 ```
 
 ## Running Tests
 
-There's no magic command line interface. You just run your test script with `node` or `coffee` (or the browser).
+There's no magic command line interface. You run your tests however you like.
 
-The `describe` method takes an initializer function that allows you to define the tests, runs them for you, and then reports the results.
 
 ## Background
 
-The basic intuition for Amen is similar to that of [Testify][]: that test frameworks should basically get out of the way and let you write clear and simple tests. There's no DSL: `assert` is just fine&mdash;and often clearer. There is no built-in mechanism for mocks since that's a separate concern and different mock libraries are appropriate for different scenarios.
+The basic intuition for Amen is that test frameworks should basically get out of the way and let you write clear and simple tests. Mocks, asserts, reporting, and so on should be separate concerns.
 
-[Testify]:https://github.com/pandastrike/testify
+Async functions also make it simpler now to handle asynchronous testing. Any test can simply return a promise.
 
-With the standardization of promises and generators in ES6, we had an opportunity to make asynchronous testing even simpler. As you can see in the above example, it's now just a matter of defining a generator function instead of an ordinary function. Amen detects that and runs it as a generator for you automatically.
+Amen is so far less than fifty lines of code, yet extensible. Any function that returns a pair (an array with two elements, the description and either a test result or an array of pairs) can be used as a test function. Any function that can handle that as input can be a reporting function.
+
+As is, Amen can handle nested tests, async tests, and pending tests.
