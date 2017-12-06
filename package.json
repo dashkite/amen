@@ -1,6 +1,6 @@
 {
   "name": "amen",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "description": "A simple test library for use with async functions",
   "keywords": [
     "test",
@@ -34,11 +34,11 @@
   },
   "homepage": "https://github.com/pandastrike/amen",
   "dependencies": {
-    "colors": "^0.6.2"
+    "colors": "^0.6.2",
+    "babel-polyfill": "^6.26.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
-    "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "coffeescript": "^2.0.0",
     "json": "^9.0.3"

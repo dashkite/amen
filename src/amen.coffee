@@ -39,6 +39,6 @@ print = ([description, result], indent="") ->
         else
           description.red
       else
-        "Pending test".yellow
+        description.yellow
 
 export {test, print}

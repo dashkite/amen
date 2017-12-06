@@ -1,4 +1,3 @@
-import "babel-polyfill"
 import {print, test} from "../src/amen"
 
 assert = require "assert"
