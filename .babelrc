@@ -1,1 +1,1 @@
-{ "presets": [["env", {"targets": {"node": "6.1"}}]] }
+{ "presets": [["env", {"targets": {"node": "6.10"}}]] }
