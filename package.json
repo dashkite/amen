@@ -41,7 +41,6 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "coffeescript": "^2.1.0",
-    "fairmont-helpers": "^3.0.0",
     "json": "^9.0.3"
   },
   "engine": "node >= 6.0.0"
