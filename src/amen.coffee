@@ -1,19 +1,36 @@
 require "colors"
 
-timeout = (t, promise) ->
-  timer = new Promise (_, reject) ->
-    setTimeout (-> reject new Error "Async test timed out"), t
-  Promise.race [ timer, promise ]
+timer = (t) ->
+  new Promise (_, nope) ->
+    setTimeout (-> nope new Error "Test timed out"), t
+
+race = (promises...) -> Promise.race [promises...]
+
+timeout = (t, promises...) -> race (timer t), promises...
+
+defaults =
+  wait: 500
 
 # TODO: use explicit result objects, instead of true | Error | undefined
 test = (description, definition) ->
+  if description.constructor == Object
+    {description, wait} = description
+  else if description.constructor == String
+    {wait} = defaults
+  else
+    description = description.toString()
+
+
   if definition?
     if Array.isArray definition
       # TODO: include error/timeout/pending count in result object
       [description, (await result for result in definition) ]
     else if definition.call?
       try
-        await timeout 1000, definition()
+        if wait == false
+          await definition()
+        else
+          await timeout wait, definition()
         [ description, true ]
       catch error
         [ description, error ]
