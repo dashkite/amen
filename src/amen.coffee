@@ -44,8 +44,8 @@ test = (description, definition) ->
 print = ([description, result], indent="") ->
   if Array.isArray result
     console.log indent, description.blue
-    for test in result
-      print test, (indent + "  ")
+    for r in result
+      print r, (indent + "  ")
   else
     console.log indent,
       if result?
