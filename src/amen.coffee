@@ -52,7 +52,13 @@ print = ([description, result], indent="") ->
         if result == true
           description.green
         else if result.message? and result.message != ""
-          "#{description.red} (#{result.message?.red})"
+          if result.message != "Test timed out"
+            """
+            #{description.red} (#{result.message.red})
+            #{result.stack.red}
+            """
+          else
+            "#{description.red} (#{result.message.red})"
         else
           description.red
       else
