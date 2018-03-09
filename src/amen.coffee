@@ -33,6 +33,7 @@ test = (description, definition) ->
           await timeout wait, definition()
         [ description, true ]
       catch error
+        console.error "#{error.stack.red}" if error.message != "Test timed out"
         [ description, error ]
     else
       [ description, (new Error "Invalid test definition") ]
@@ -52,7 +53,7 @@ print = ([description, result], indent="") ->
         if result == true
           description.green
         else if result.message? and result.message != ""
-          "#{description.red} (#{result.message?.red})"
+          "#{description.red} (#{result.message.red})"
         else
           description.red
       else
