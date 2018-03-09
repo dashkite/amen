@@ -1,6 +1,6 @@
 {
   "name": "amen",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "A simple test library for use with async functions",
   "keywords": [
     "test",
