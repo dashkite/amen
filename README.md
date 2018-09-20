@@ -49,6 +49,7 @@ npm i -D amen
 
 There's no magic command line interface. You run your tests however you like.
 
+Amen exports a `success` value that indicates whether any tests have failed. You can import this if you want to take some action (say, like exiting with a non-zero status code) based on the success or failure of the tests.
 
 ## Background
 

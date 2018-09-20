@@ -11,6 +11,8 @@ timeout = (t, promises...) -> race (timer t), promises...
 defaults =
   wait: 500
 
+success = true
+
 # TODO: use explicit result objects, instead of true | Error | undefined
 test = (description, definition) ->
   if description.constructor == Object
@@ -33,6 +35,7 @@ test = (description, definition) ->
           await timeout wait, definition()
         [ description, true ]
       catch error
+        success = false # at least one failing test
         console.error "#{error.stack.red}" if error.message != "Test timed out"
         [ description, error ]
     else
@@ -44,11 +47,11 @@ test = (description, definition) ->
 # TODO: groups with failing/pending tests should be red
 print = ([description, result], indent="") ->
   if Array.isArray result
-    console.log indent, description.blue
+    console.error indent, description.blue
     for r in result
       print r, (indent + "  ")
   else
-    console.log indent,
+    console.error indent,
       if result?
         if result == true
           description.green
@@ -59,4 +62,4 @@ print = ([description, result], indent="") ->
       else
         description.yellow
 
-export {test, print}
+export {test, print, success}
