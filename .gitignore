@@ -3,4 +3,4 @@ logs/
 log/
 *.log
 node_modules/
-lib/
+build/
