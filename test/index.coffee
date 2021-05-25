@@ -1,5 +1,5 @@
 import assert from "assert"
-import {print, test, success} from "../src/amen"
+import {print, test, success} from "../src"
 
 # import customTimeout from "./custom-timeout"
 # import multiple from "./multiple-prints"
