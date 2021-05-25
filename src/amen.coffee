@@ -1,4 +1,4 @@
-require "colors"
+import chalk from "chalk"
 
 timer = (t) ->
   new Promise (_, nope) ->
@@ -8,8 +8,7 @@ race = (promises...) -> Promise.race [promises...]
 
 timeout = (t, promises...) -> race (timer t), promises...
 
-defaults =
-  wait: 500
+defaults = wait: 1000
 
 success = true
 
@@ -22,21 +21,19 @@ test = (description, definition) ->
   else
     description = description.toString()
 
-
   if definition?
     if Array.isArray definition
       # TODO: include error/timeout/pending count in result object
-      [description, (await result for result in definition) ]
+      [ description, (await Promise.all definition) ]
     else if definition.call?
       try
-        if wait == false
-          await definition()
-        else
-          await timeout wait, definition()
+        result = definition()
+        if wait == false then await result else await timeout wait, result
         [ description, true ]
       catch error
         success = false # at least one failing test
-        console.error "#{error.stack.red}" if error.message != "Test timed out"
+        if error.message != "Test timed out"
+          console.error chalk.red "#{error.stack}"
         [ description, error ]
     else
       [ description, (new Error "Invalid test definition") ]
@@ -47,19 +44,19 @@ test = (description, definition) ->
 # TODO: groups with failing/pending tests should be red
 print = ([description, result], indent="") ->
   if Array.isArray result
-    console.error indent, description.blue
+    console.error indent, chalk.blue description
     for r in result
       print r, (indent + "  ")
   else
     console.error indent,
       if result?
         if result == true
-          description.green
+          chalk.green description
         else if result.message? and result.message != ""
-          "#{description.red} (#{result.message.red})"
+          chalk.red "#{description} (#{result.message})"
         else
-          description.red
+          chalk.red description
       else
-        description.yellow
+        chalk.yellow description
 
-export {test, print, success}
+export { test, print, success }

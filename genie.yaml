@@ -1,0 +1,10 @@
+presets:
+  coffeescript:
+    targets:
+      - import
+      - node
+  verify: null
+  update: null
+  release: null
+  esm: null
+  license: null

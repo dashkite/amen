@@ -1,6 +1,6 @@
 {
-  "name": "amen",
-  "version": "3.0.0",
+  "name": "@dashkite/amen",
+  "version": "0.0.0",
   "description": "A simple test library for use with async functions",
   "keywords": [
     "test",
@@ -15,7 +15,13 @@
     "type": "git",
     "url": "git://github.com/pandastrike/amen.git"
   },
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "contributors": [
+    {
+      "name": "Dan Yoder",
+      "email": "dan@pandastrike.com"
+    }
+  ],
   "exports": {
     ".": {
       "import": "./build/import/src/index.js",
@@ -38,11 +44,5 @@
     "@dashkite/genie-presets": "^0.1.7",
     "@dashkite/masonry": "^0.10.4",
     "coffeescript": "^2.5.1"
-  },
-  "authors": [
-    {
-      "name": "Dan Yoder",
-      "email": "dan@pandastrike.com"
-    }
-  ]
+  }
 }

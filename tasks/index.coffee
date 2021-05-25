@@ -1,9 +1,4 @@
-{tools} = require "panda-builder"
-p9k = require "panda-9000"
+import * as t from "@dashkite/genie"
+import preset from "@dashkite/genie-presets"
 
-{target} = tools p9k
-
-target "npm"
-
-process.on "unhandledRejection", (reason) ->
-  console.error "Unhandled Rejection", reason
+preset t
