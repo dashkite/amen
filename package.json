@@ -36,9 +36,6 @@
   "scripts": {
     "test": "genie test"
   },
-  "dependencies": {
-    "chalk": "^4.1.1"
-  },
   "devDependencies": {
     "@dashkite/genie": "^0.4.0",
     "@dashkite/genie-presets": "^0.1.12",
