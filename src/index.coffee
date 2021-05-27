@@ -1,5 +1,3 @@
-import chalk from "chalk"
-
 timer = (t) ->
   new Promise (_, nope) ->
     setTimeout (-> nope new Error "Test timed out"), t
@@ -11,6 +9,12 @@ timeout = (t, promises...) -> race (timer t), promises...
 defaults = wait: 1000
 
 success = true
+
+makeError = (error) ->
+  success: false
+  message: error.message
+  stack: error.stack
+
 
 # TODO: use explicit result objects, instead of true | Error | undefined
 test = (description, definition) ->
@@ -32,21 +36,21 @@ test = (description, definition) ->
         [ description, true ]
       catch error
         success = false # at least one failing test
-        if error.message != "Test timed out"
-          console.error chalk.red "#{error.stack}"
-        [ description, error ]
+        [ description, makeError error ]
     else
-      [ description, (new Error "Invalid test definition") ]
+      [ description, makeError new Error "Invalid test definition" ]
   else
     [ description, undefined ]
 
 # TODO: add error counts for groups
 # TODO: groups with failing/pending tests should be red
+
 print = ([description, result], indent="") ->
+  chalk = (await import("chalk")).default
   if Array.isArray result
     console.error indent, chalk.blue description
     for r in result
-      print r, (indent + "  ")
+      await print r, (indent + "  ")
   else
     console.error indent,
       if result?
