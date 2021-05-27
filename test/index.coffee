@@ -24,7 +24,7 @@ border = "-".repeat 80
 banner = (s) -> console.log "#{border}\n#{indent s}\n#{border}"
 
 do ->
-  print await test "Using Amen to test itself", [
+  await print await test "Using Amen to test itself", [
     test
       description: "Basic Tests"
       wait: false,
