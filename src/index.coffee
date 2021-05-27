@@ -46,21 +46,20 @@ test = (description, definition) ->
 # TODO: groups with failing/pending tests should be red
 
 print = ([description, result], indent="") ->
-  chalk = (await import("chalk")).default
   if Array.isArray result
-    console.error indent, chalk.blue description
+    console.error indent, description
     for r in result
-      await print r, (indent + "  ")
+      print r, (indent + "  ")
   else
     console.error indent,
       if result?
         if result == true
-          chalk.green description
+          "pass - #{description}"
         else if result.message? and result.message != ""
-          chalk.red "#{description} (#{result.message})"
+          "fail - #{description} (#{result.message})"
         else
-          chalk.red description
+          "fail - #{description}"
       else
-        chalk.yellow description
+        "pending - description"
 
 export { test, print, success }
