@@ -6,7 +6,7 @@ race = (promises...) -> Promise.race [promises...]
 
 timeout = (t, promises...) -> race (timer t), promises...
 
-defaults = wait: 1000
+defaults = wait: false
 
 success = true
 
@@ -15,32 +15,49 @@ makeError = (error) ->
   message: error.message
   stack: error.stack
 
+merge = ( a, b ) -> { a..., b... }
+
+$targets = ( process.env[ "targets" ]?.split /\s/ ) ? []
 
 # TODO: use explicit result objects, instead of true | Error | undefined
-test = (description, definition) ->
-  if description.constructor == Object
-    {description, wait} = description
-  else if description.constructor == String
-    {wait} = defaults
-  else
-    description = description.toString()
 
-  if definition?
-    if Array.isArray definition
-      # TODO: include error/timeout/pending count in result object
-      [ description, (await Promise.all definition) ]
-    else if definition.call?
-      try
-        result = definition()
-        if wait == false then await result else await timeout wait, result
-        [ description, true ]
-      catch error
-        success = false # at least one failing test
-        [ description, makeError error ]
+isString = ( value ) -> value.constructor == String
+isObject = ( value ) -> value.constructor == Object
+
+target = ( targets, args... ) ->
+  if targets.find ( target ) -> target in $targets
+    test args...
+
+test = ( args... ) ->
+  do ({ description, wait, definition, options } = {}) ->
+    if isString args[0]
+      if isObject args[1]
+        [ description, options, definition ] = args
+      else
+        [ description, definition ] = args
+    else if isObject args[0]
+      [ options, definition ] = args
+      { description } = options
+
+
+    { wait, targets } = merge defaults, options
+      
+    if definition?
+      if Array.isArray definition
+        # TODO: include error/timeout/pending count in result object
+        [ description, (await Promise.all definition) ]
+      else if definition.call?
+        try
+          result = definition()
+          if wait == false then await result else await timeout wait, result
+          [ description, true ]
+        catch error
+          success = false # at least one failing test
+          [ description, makeError error ]
+      else
+        [ description, makeError new Error "Invalid test definition" ]
     else
-      [ description, makeError new Error "Invalid test definition" ]
-  else
-    [ description, undefined ]
+      [ description, undefined ]
 
 # TODO: add error counts for groups
 # TODO: groups with failing/pending tests should be red
