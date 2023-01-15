@@ -30,7 +30,7 @@
   },
   "main": "build/node/src/index.js",
   "files": [
-    "build/import/src",
+    "build/browser/src",
     "build/node/src"
   ],
   "scripts": {
@@ -38,8 +38,8 @@
   },
   "devDependencies": {
     "@dashkite/genie": "^0.5.11",
-    "@dashkite/genie-presets": "file:../genie-presets",
-    "@dashkite/masonry": "file:../masonry",
-    "coffeescript": "^2.5.1"
+    "@dashkite/genie-presets": "^0.6.0",
+    "@dashkite/masonry": "^0.12.5",
+    "coffeescript": "^2.7.0"
   }
 }
