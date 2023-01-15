@@ -21,8 +21,8 @@ $targets = ( process.env[ "targets" ]?.split /\s/ ) ? []
 
 # TODO: use explicit result objects, instead of true | Error | undefined
 
-isString = ( value ) -> value.constructor == String
-isObject = ( value ) -> value.constructor == Object
+isString = ( value ) -> value?.constructor == String
+isObject = ( value ) -> value?.constructor == Object
 
 target = ( targets, args... ) ->
   if targets.find ( target ) -> target in $targets
@@ -45,7 +45,7 @@ test = ( args... ) ->
     if definition?
       if Array.isArray definition
         # TODO: include error/timeout/pending count in result object
-        [ description, (await Promise.all definition) ]
+        [ description, ( await Promise.all definition ) ]
       else if definition.call?
         try
           result = definition()
