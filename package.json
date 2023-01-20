@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@dashkite/genie": "^0.5.11",
-    "@dashkite/genie-presets": "^0.6.0",
+    "@dashkite/genie-presets": "^0.6.4",
     "@dashkite/masonry": "^0.12.5",
     "coffeescript": "^2.7.0"
   }
