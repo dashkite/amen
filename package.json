@@ -34,7 +34,8 @@
     "build/node/src"
   ],
   "scripts": {
-    "test": "genie test"
+    "test": "genie test",
+    "build": "genie build"
   },
   "devDependencies": {
     "@dashkite/genie": "^0.5.11",
