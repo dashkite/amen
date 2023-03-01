@@ -24,7 +24,7 @@
   ],
   "exports": {
     ".": {
-      "import": "./build/import/src/index.js",
+      "browser": "./build/browser/src/index.js",
       "node": "./build/node/src/index.js"
     }
   },
