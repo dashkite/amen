@@ -17,7 +17,8 @@ makeError = (error) ->
 
 merge = ( a, b ) -> { a..., b... }
 
-$targets = ( process.env[ "targets" ]?.split /\s/ ) ? []
+# TODO convention for setting environment in the browser
+$targets = ( process?.env[ "targets" ]?.split /\s/ ) ? []
 
 # TODO: use explicit result objects, instead of true | Error | undefined
 
