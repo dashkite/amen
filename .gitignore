@@ -4,3 +4,6 @@ log/
 *.log
 node_modules/
 build/
+
+.genie
+
