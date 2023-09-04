@@ -6,10 +6,10 @@ settings:
 
 devDependencies:
   '@dashkite/genie':
-    specifier: ^0.5.11
+    specifier: link:../genie
     version: 0.5.11
   '@dashkite/genie-presets':
-    specifier: ^0.7.0
+    specifier: link:../genie-presets
     version: 0.7.0
   '@dashkite/masonry':
     specifier: ^0.12.5

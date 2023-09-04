@@ -38,8 +38,8 @@
     "build": "genie build"
   },
   "devDependencies": {
-    "@dashkite/genie": "^0.5.11",
-    "@dashkite/genie-presets": "^0.7.0",
+    "@dashkite/genie": "link:../genie",
+    "@dashkite/genie-presets": "link:../genie-presets",
     "@dashkite/masonry": "^0.12.5",
     "coffeescript": "^2.7.0"
   }
