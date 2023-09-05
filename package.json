@@ -39,7 +39,6 @@
   },
   "devDependencies": {
     "@dashkite/genie": "link:../genie",
-    "@dashkite/genie-presets": "link:../genie-presets",
     "@dashkite/masonry": "^0.12.5",
     "coffeescript": "^2.7.0"
   }
