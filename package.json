@@ -39,7 +39,6 @@
   },
   "devDependencies": {
     "@dashkite/genie": "link:../genie",
-    "@dashkite/masonry": "^0.12.5",
-    "coffeescript": "^2.7.0"
+    "@dashkite/genie-coffee": "link:../genie-coffee"
   }
 }
