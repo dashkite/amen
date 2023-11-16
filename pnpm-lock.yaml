@@ -1,13 +1,9 @@
-lockfileVersion: '6.0'
+lockfileVersion: 5.4
 
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
+specifiers:
+  '@dashkite/genie': link:../genie
+  '@dashkite/genie-coffee': link:../genie-coffee
 
 devDependencies:
-  '@dashkite/genie':
-    specifier: link:../genie
-    version: link:../genie
-  '@dashkite/genie-coffee':
-    specifier: link:../genie-coffee
-    version: link:../genie-coffee
+  '@dashkite/genie': link:../genie
+  '@dashkite/genie-coffee': link:../genie-coffee
