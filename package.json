@@ -38,7 +38,7 @@
     "build": "genie build"
   },
   "devDependencies": {
-    "@dashkite/genie": "link:../genie",
+    "@dashkite/genie": "^0.7.3",
     "@dashkite/genie-coffee": "link:../genie-coffee"
   }
 }
