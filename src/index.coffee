@@ -17,10 +17,8 @@ makeError = (error) ->
 
 merge = ( a, b ) -> { a..., b... }
 
-# TODO convention for setting environment in the browser
 $targets = ( process?.env[ "targets" ]?.split /\s/ ) ? []
 
-# TODO: use explicit result objects, instead of true | Error | undefined
 
 isString = ( value ) -> value?.constructor == String
 isObject = ( value ) -> value?.constructor == Object
@@ -45,7 +43,6 @@ test = ( args... ) ->
       
     if definition?
       if Array.isArray definition
-        # TODO: include error/timeout/pending count in result object
         [ description, ( await Promise.all definition ) ]
       else if definition.call?
         try
@@ -60,8 +57,6 @@ test = ( args... ) ->
     else
       [ description, undefined ]
 
-# TODO: add error counts for groups
-# TODO: groups with failing/pending tests should be red
 
 print = ([description, result], indent="") ->
   if Array.isArray result
