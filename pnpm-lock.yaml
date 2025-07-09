@@ -20,9 +20,6 @@ importers:
       '@dashkite/genie-module':
         specifier: link:../genie-module
         version: link:../genie-module
-      '@dashkite/vista':
-        specifier: link:../vista
-        version: link:../vista
 
 packages:
 
