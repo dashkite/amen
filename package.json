@@ -40,8 +40,9 @@
   },
   "devDependencies": {
     "@dashkite/genie": "^0.20.4",
-    "@dashkite/genie-clean": "0.9.0",
-    "@dashkite/genie-coffee": "0.9.0",
+    "@dashkite/genie-clean": "^0.9.0",
+    "@dashkite/genie-coffee": "^0.9.0",
     "@dashkite/genie-release": "^0.3.0"
-  }
+  },
+  "dependencies": []
 }
