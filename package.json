@@ -39,10 +39,10 @@
     "release": "genie release"
   },
   "devDependencies": {
-    "@dashkite/genie": "^0.20.4",
+    "@dashkite/genie": "^0.20.12",
     "@dashkite/genie-clean": "^0.9.0",
     "@dashkite/genie-coffee": "^0.9.0",
-    "@dashkite/genie-module": "^0.5.36",
+    "@dashkite/genie-module": "^0.5.37",
     "@dashkite/genie-release": "^0.5.0"
   }
 }
