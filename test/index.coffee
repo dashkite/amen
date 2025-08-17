@@ -1,4 +1,3 @@
-import assert from "assert"
 import {print, test, success} from "../src"
 
 # import customTimeout from "./custom-timeout"
@@ -15,48 +14,46 @@ sleep = (interval) ->
   new Promise (resolve, reject) ->
     timer interval, -> resolve()
 
-sleepyTrue = ->
-  await sleep 150
-  assert true
-
 indent = (s) -> ("  #{line}" for line in s.split "\n").join "\n"
+
 border = "-".repeat 80
+
 banner = (s) -> console.log "#{border}\n#{indent s}\n#{border}"
 
 do ->
+
   await print await test "Using Amen to test itself", [
-    test
-      description: "Basic Tests"
-      wait: false,
+    test 
+      description: "Basic Tests"      
       [
         test "Start with the basics", [
           test "A simple test", ->
           test "A nested test", [
             test "I'm nested", ->
           ]
-          test "A failing test", -> assert false
+          test "A failing test", -> throw new Error "failing test"
           test "A nested group of async tests", [
             test "An async test", -> await good()
             test "A failing async test", -> await bad()
-            test "An async test that never resolves", -> (promise ->)
+            test "An async test that never resolves",
+              wait: 1, -> promise ->
           ]
           test "A pending test"
         ]
       ]
 
     test
-      description: "Custom Timeout"
-      wait: false,
+      description: "Custom Timeout"      
       [
         test
           description: "A passing test with 200ms timeout"
           wait: 200,
-          sleepyTrue
+          -> sleep 150
 
         test
           description: "A failing test with 50ms timeout"
           wait: 50,
-          sleepyTrue
+          -> sleep 150
       ]
   ]
 
