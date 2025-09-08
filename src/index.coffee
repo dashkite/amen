@@ -2,9 +2,13 @@ timer = (t) ->
   new Promise (_, nope) ->
     setTimeout (-> nope new Error "Test timed out"), t
 
-race = (promises...) -> Promise.race [promises...]
+race = ( a, b ) -> Promise.race [ a, b ]
 
-timeout = (t, promises...) -> race (timer t), promises...
+timeout = (t, promise ) -> 
+  if t?
+    race (timer t), [ promise ]
+  else
+    promise
 
 defaults = wait: undefined
 
@@ -21,46 +25,32 @@ $targets = ( process?.env[ "targets" ]?.split /\s/ ) ? []
 
 isString = ( value ) -> value?.constructor == String
 isObject = ( value ) -> value?.constructor == Object
-isAsyncFunction = do ({ T } = {}) ->
-  T = ( -> await null ).constructor
-  ( f ) -> f instanceof T
-isGeneratorFunction = do ({ T } = {}) ->
-  T = ( -> yield null ).constructor
-  ( f ) -> f instanceof T
-isAsyncGeneratorFunction = do ({ T } = {}) ->
-  T = ( -> yield await null ).constructor
-  ( f ) -> f instanceof T
+
+isPromise = ( value ) -> value?.then?
+
+isGenerator = ( value ) ->
+  value?[ Symbol.iterator ]?
+
+isAsyncGenerator = ( value ) ->
+  value?[ Symbol.asyncIterator ]?
 
 target = ( targets, args... ) ->
   if targets.find ( target ) -> target in $targets
     test args...
 
-runAsyncTest = ( definition, wait ) ->
-  if wait?
-    timeout wait, definition()
-  else definition()
-
-runGeneratorTest = ( definition ) ->
-  undefined for x from definition() ; return
-
-runAsyncGeneratorTest = ( definition, wait ) ->
-  if wait?
-    timeout wait, do ->
-      undefined for await x from definition() ; return
-  else
-    undefined for await x from definition() ; return
-
 run = ( definition, { wait }) ->
-  if isAsyncFunction definition
-    runAsyncTest definition, wait
-  else if isGeneratorFunction definition
-    runGeneratorTest definition
-  else if isAsyncGeneratorFunction definition
-    runAsyncGeneratorTest definition, wait
-  else if wait?
-    timeout wait, definition()
+  result = definition()
+  if isPromise result
+    timeout wait, result
+  else if isGenerator result
+    undefined for value from result
+    value
+  else if isAsyncGenerator
+    timeout wait, ->
+      undefined for await value from result
+      value
   else
-    definition()
+    result
 
 test = ( args... ) ->
   do ({ description, wait, definition, options } = {}) ->
@@ -77,7 +67,7 @@ test = ( args... ) ->
       
     if definition?
       if Array.isArray definition
-        [ description, ( await Promise.all definition ) ]
+        [ description, ( await Promise.all definition )]
       else if definition.call?
         try
           await run definition, { wait }
