@@ -42,7 +42,7 @@
     "@dashkite/genie": "^0.20.14",
     "@dashkite/genie-clean": "^0.9.0",
     "@dashkite/genie-coffee": "^0.9.0",
-    "@dashkite/genie-module": "^0.5.41",
+    "@dashkite/genie-module": "^0.5.42",
     "@dashkite/genie-release": "^0.5.0"
   }
 }
