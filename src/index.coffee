@@ -46,7 +46,7 @@ run = ( definition, { wait }) ->
     undefined for value from result
     # avoid accumulation
     undefined
-  else if isAsyncGenerator
+  else if isAsyncGenerator result
     timeout wait, do -> 
       undefined for await value from result
       return
