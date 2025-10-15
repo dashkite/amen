@@ -1,6 +1,6 @@
 {
   "name": "@dashkite/amen",
-  "version": "0.9.14",
+  "version": "0.9.15",
   "description": "A simple test library for use with async functions",
   "keywords": [
     "test",
