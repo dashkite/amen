@@ -4,9 +4,9 @@ timer = (t) ->
 
 race = ( a, b ) -> Promise.race [ a, b ]
 
-timeout = (t, promise ) -> 
+timeout = (t, promise ) ->
   if t?
-    race (timer t), [ promise ]
+    race (timer t), promise
   else
     promise
 
