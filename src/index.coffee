@@ -75,8 +75,13 @@ test = ( args... ) ->
           [ description, true ]          
         catch error
           success = false # at least one failing test
+          if process?
+            process.exitCode = 1
           [ description, makeError error ]
       else
+        success = false
+        if process?
+          process.exitCode = 1
         [ description, makeError new Error "Invalid test definition" ]
     else
       [ description, undefined ]

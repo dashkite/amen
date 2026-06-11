@@ -1,74 +1,39 @@
-import {print, test, success} from "../src"
+import { fork } from "child_process"
+import { fileURLToPath } from "url"
+import { dirname, join } from "path"
+import assert from "@dashkite/assert"
+import { test, print } from "../src"
 
-# import customTimeout from "./custom-timeout"
-# import multiple from "./multiple-prints"
+filename = fileURLToPath import.meta.url
+directory = dirname filename
 
-promise = (resolve, reject) -> new Promise resolve, reject
-
-good = -> promise (resolve) -> setTimeout resolve, 100
-bad = -> promise (_, reject) -> setTimeout (-> reject new Error "oops"), 100
-
-timer = (wait, action) -> setTimeout(action, wait)
-
-sleep = (interval) ->
-  new Promise (resolve, reject) ->
-    timer interval, -> resolve()
-
-indent = (s) -> ("  #{line}" for line in s.split "\n").join "\n"
-
-border = "-".repeat 80
-
-banner = (s) -> console.log "#{border}\n#{indent s}\n#{border}"
+run = ( name ) ->
+  new Promise ( resolve ) ->
+    path = join directory, "fixtures", "#{ name }.js"
+    child = fork path, [], stdio: "pipe"
+    
+    stdout = ""
+    stderr = ""
+    
+    child.stdout.on "data", ( data ) -> stdout += data.toString()
+    child.stderr.on "data", ( data ) -> stderr += data.toString()
+    
+    child.on "exit", ( code ) ->
+      resolve { code, stdout, stderr }
 
 do ->
 
-  await print await test "Using Amen to test itself", [
-    test 
-      description: "Basic Tests"      
-      [
-        test "Start with the basics", [
-          test "A simple test", ->
-          test "A nested test", [
-            test "I'm nested", ->
-          ]
-          test "A failing test", -> throw new Error "failing test"
-          test "A nested group of async tests", [
-            test "An async test", -> await good()
-            test "A failing async test", -> await bad()
-            test "An async test that never resolves",
-              wait: 1, -> promise ->
-          ]
-          test "A pending test"
-        ]
-      ]
+  print await test "Amen Test Runner", [
 
-    test
-      description: "Custom Timeout"      
-      [
-        test
-          description: "A passing test with 200ms timeout"
-          wait: 200,
-          -> sleep 150
+    test "passing suite exits with 0", ->
+      { code } = await run "passing"
+      assert.equal code, 0
 
-        test
-          description: "A failing test with 50ms timeout"
-          wait: 50,
-          -> sleep 150
-      ]
+    test "failing suite exits with 1 and prints expected errors", ->
+      { code, stderr } = await run "failing"
+      assert.equal code, 1
+      assert ( stderr.includes "oops" )
+      assert ( stderr.includes "failing test" )
+      assert ( stderr.includes "Invalid test definition" )
+
   ]
-
-  banner """
-
-    IMPORTANT
-
-    Basic tests should generate an error ('oops')
-    and have three failing tests and a pending test.
-
-    Custom Timeout tests should generate one pass
-    and one timeout error.
-
-    Tests should exit with a non-zero status code.
-
-  """
-
-  process.exit if success then 0 else 1
