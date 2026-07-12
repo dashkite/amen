@@ -1,8 +1,27 @@
 # Amen
 
+*A simple, flexible testing library that supports async functions.*
+
 [![Hippocratic License HL3-CORE](https://img.shields.io/static/v1?label=Hippocratic%20License&message=HL3-CORE&labelColor=5e2751&color=bc8c3d)](https://firstdonoharm.dev/version/3/0/core.html)
 
-Amen is a simple, flexible testing library that supports async functions.
+Amen is a simple, flexible testing library that supports async functions. It allows you to write clear and simple tests where mock, assert, and report concerns are separate.
+
+## Features
+
+- Amen natively consumes promises out of the box, allowing any asynchronous test logic to be written transparently without relying on complex mock chains.
+- You can structure your test suites with arbitrary levels of depth, which keeps closely related components logically grouped.
+- When scaffolding new functionality, you can define pending tests without callback bodies to easily flag work for the future.
+- Despite weighing in at under fifty lines of code, the core design remains highly extensible by treating everything as a simple function that returns a pair.
+
+## Installation
+
+```bash
+pnpm install -D amen
+```
+
+## Usage
+
+Amen exports a `test` function and a `print` function. Tests can be asynchronous and nested.
 
 ```coffeescript
 import {print, test} from "amen"
@@ -41,12 +60,6 @@ This would generate output like this:
 
 ![Screen shot of output.](./docs/screen-shot.png)
 
-## Installation
-
-```
-npm i -D amen
-```
-
 ## Running Tests
 
 There's no magic command line interface. You run your tests however you like.
@@ -62,3 +75,10 @@ Async functions also make it simpler now to handle asynchronous testing. Any tes
 Amen is so far less than fifty lines of code, yet extensible. Any function that returns a pair (an array with two elements, the description and either a test result or an array of pairs) can be used as a test function. Any function that can handle that as input can be a reporting function.
 
 As is, Amen can handle nested tests, async tests, and pending tests.
+
+## Other Resources
+
+- [Reference](docs/reference.md)
+- [Recipes](docs/recipes.md)
+- [Technical Notes](docs/technical-notes.md)
+- [Testing Guide](docs/testing.md)
