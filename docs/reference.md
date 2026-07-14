@@ -15,7 +15,10 @@ $test: \text{options}, \text{definition} \dashrightarrow \text{test}$
 $test: \text{description}, \text{options}, \text{definition} \dashrightarrow \text{test}$
 
 - **description**: A string describing the test or group.
-- **options**: An object containing options (e.g. `{ targets: [...] }` or `{ wait: 1000 }`).
+- **options**: An object containing configuration properties. When no separate description string is passed, the options object must include the `description` property to name the test. Supported properties:
+  - `description`: The test name or description.
+  - `targets`: A tag string or array of tags for conditional test targeting.
+  - `wait`: A timeout duration limit in milliseconds for asynchronous executions.
 - **definition**: One of:
   - A function (synchronous, promise-returning, generator, or async generator) for a standard test case.
   - An iterable of child tests for a group definition.
