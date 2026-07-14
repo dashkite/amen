@@ -38,18 +38,9 @@ class TestGroup extends AbstractTest
     @status = "running"
     try
       childResults = await Promise.all ( child.run() for child in @children )
-      @status = "passed"
-      @result = [ @description, childResults ]
-      @_resolve @result
-      @promise
+      @_pass childResults
     catch error
-      if process?
-        process.exitCode = 1
-      @status = "failed"
-      @error = error
-      @result = [ @description, { success: false, message: error.message, stack: error.stack } ]
-      @_resolve @result
-      @promise
+      @_fail error
 
   _iterate: ->
     runPromise = @run()

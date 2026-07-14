@@ -43,28 +43,9 @@ class RunnableTest extends AbstractTest
             undefined for await value from result
             undefined
 
-        @status = "passed"
-        @result = [ @description, true ]
-        @_resolve @result
-        @promise
+        @_pass true
       catch error
-        if process?
-          process.exitCode = 1
-        @status = "failed"
-        @error = error
-        @result = [ @description, { success: false, message: error.message, stack: error.stack } ]
-        @_resolve @result
-        @promise
-
-  _iterate: ->
-    runPromise = @run()
-    yield type: "test:start", test: @
-    await runPromise
-    switch @status
-      when "passed" then yield type: "test:success", test: @
-      when "failed" then yield type: "test:failure", test: @, error: @error
-      when "skipped" then yield type: "test:skipped", test: @
-      else yield type: "test:pending", test: @
+        @_fail error
 
 export { RunnableTest }
 export default RunnableTest

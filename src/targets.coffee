@@ -1,6 +1,13 @@
 import { test } from "./test"
 import { isString } from "@dashkite/joy"
 
+getEnvTargets = ->
+  envStr = if process? then process.env.targets ? process.env.TARGETS ? process.env.target ? process.env.TARGET
+  if ( envStr? ) && ( envStr.trim() != "" )
+    envStr.trim().split /\s+/
+  else
+    []
+
 matchTest = ( node, envTargets ) ->
   (( node.options?.targets? ) && do ->
     testTargets = if Array.isArray node.options.targets then node.options.targets else [ node.options.targets ]
@@ -15,11 +22,7 @@ hasMatchingDescendant = ( node, envTargets ) ->
     ( matchTest child, envTargets ) || ( hasMatchingDescendant child, envTargets )
 
 shouldRun = ( node ) ->
-  envTargets = []
-  if process?
-    envStr = process.env.targets ? process.env.TARGETS ? process.env.target ? process.env.TARGET
-    if ( envStr? ) && ( envStr.trim() != "" )
-      envTargets = envStr.trim().split /\s+/
+  envTargets = getEnvTargets()
 
   if envTargets.length == 0
     if node.options?.targets?
@@ -32,13 +35,9 @@ shouldRun = ( node ) ->
       (( node.children?.length > 0 ) && ( hasMatchingDescendant node, envTargets ))
 
 target = ( targets, args... ) ->
-  envTargets = []
-  if process?
-    envStr = process.env.targets ? process.env.TARGETS ? process.env.target ? process.env.TARGET
-    if ( envStr? ) && ( envStr.trim() != "" )
-      envTargets = envStr.trim().split /\s+/
-
+  envTargets = getEnvTargets()
   targetList = if Array.isArray targets then targets else [ targets ]
+
   if targetList.some ( t ) -> t in envTargets
     test args...
   else

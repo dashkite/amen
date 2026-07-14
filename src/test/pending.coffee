@@ -10,11 +10,5 @@ class PendingTest extends AbstractTest
     @_resolve @result
     @promise
 
-  _iterate: ->
-    runPromise = @run()
-    yield type: "test:start", test: @
-    await runPromise
-    yield type: "test:pending", test: @
-
 export { PendingTest }
 export default PendingTest
