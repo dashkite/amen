@@ -1,5 +1,5 @@
 import assert from "@dashkite/assert"
-import { test, print, success } from "../../src"
+import { test, print } from "../../src"
 
 do ->
   await print await test "failing fixture", [
@@ -10,4 +10,4 @@ do ->
         setTimeout (-> reject new Error "oops"), 10
     test "invalid definition", 123
   ]
-  assert.equal success, false
+

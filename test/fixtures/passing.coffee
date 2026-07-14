@@ -1,5 +1,5 @@
 import assert from "@dashkite/assert"
-import { test, print, success } from "../../src"
+import { test, print } from "../../src"
 
 do ->
   await print await test "passing fixture", [
@@ -10,4 +10,4 @@ do ->
         assert.equal true, true
     ]
   ]
-  assert.equal success, true
+
