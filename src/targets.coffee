@@ -17,13 +17,21 @@ getActiveTargets = ( node ) ->
     current = current.parent
   result ? []
 
-matchTest = ( node, active ) ->
-  (( node.options?.targets? ) && do ->
-    ( toArray node.options.targets ).some ( t ) -> t in active
-  ) || ( node.description? && do ->
+matchTags = ( node, active ) ->
+  if node.options?.targets?
+    ( toArray node.options.targets ).some ( tag ) -> tag in active
+  else
+    false
+
+matchDescription = ( node, active ) ->
+  if node.description?
     desc = node.description.toLowerCase()
-    active.some ( t ) -> desc.includes t.toLowerCase()
-  )
+    active.some ( target ) -> desc.includes target.toLowerCase()
+  else
+    false
+
+matchTest = ( node, active ) ->
+  ( matchTags node, active ) || ( matchDescription node, active )
 
 hasMatchingDescendant = ( node, active ) ->
   node.children.some ( child ) ->
