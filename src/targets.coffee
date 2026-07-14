@@ -3,16 +3,21 @@ import { isString, isObject } from "@dashkite/joy"
 
 getActiveTargets = ( node ) ->
   current = node
-  while current?
+  result = undefined
+  while ( current? ) && ( ! result? )
     active = current.options?.active ? current.active
     if active?
-      return if Array.isArray active then active else [ active ]
+      result = if Array.isArray active then active else [ active ]
     current = current.parent
-  []
+  result ? []
 
 matchTest = ( node, active ) ->
   (( node.options?.targets? ) && do ->
-    testTargets = if Array.isArray node.options.targets then node.options.targets else [ node.options.targets ]
+    testTargets =
+      if Array.isArray node.options.targets
+        node.options.targets
+      else
+        [ node.options.targets ]
     testTargets.some ( t ) -> t in active
   ) || ( node.description? && do ->
     desc = node.description.toLowerCase()

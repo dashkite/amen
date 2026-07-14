@@ -29,7 +29,11 @@ class TestGroup extends AbstractTest
     instance = Object.assign ( new @ ), { description, definition, options }
     instance.children = []
     for child from definition
-      node = if child instanceof AbstractTest then child else ComputedTest.make child
+      node =
+        if child instanceof AbstractTest
+          child
+        else
+          ComputedTest.make child
       node.parent = instance
       instance.children.push node
     instance
@@ -45,7 +49,8 @@ class TestGroup extends AbstractTest
   _iterate: ->
     runPromise = @run()
     yield type: "group:start", test: @
-    childrenIterators = ( child[ Symbol.asyncIterator ]() for child in @children )
+    childrenIterators =
+      ( child[ Symbol.asyncIterator ]() for child in @children )
     yield from concurrentMerge childrenIterators
     await runPromise
     yield type: "group:end", test: @

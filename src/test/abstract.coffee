@@ -27,14 +27,25 @@ class AbstractTest
       process.exitCode = 1
     @status = "failed"
     @error = error
-    failureResult = { success: false, message: error.message, stack: error.stack }
-    @result = if @description? then [ @description, failureResult ] else failureResult
+    failureResult =
+      success: false
+      message: error.message
+      stack: error.stack
+    @result =
+      if @description?
+        [ @description, failureResult ]
+      else
+        failureResult
     @_resolve @result
     @promise
 
   _pass: ( value ) ->
     @status = "passed"
-    @result = if @description? then [ @description, value ] else value
+    @result =
+      if @description?
+        [ @description, value ]
+      else
+        value
     @_resolve @result
     @promise
 
@@ -44,10 +55,14 @@ class AbstractTest
       yield type: "test:start", test: @
       await runPromise
       switch @status
-        when "passed" then yield type: "test:success", test: @
-        when "failed" then yield type: "test:failure", test: @, error: @error
-        when "skipped" then yield type: "test:skipped", test: @
-        else yield type: "test:pending", test: @
+        when "passed"
+          yield type: "test:success", test: @
+        when "failed"
+          yield type: "test:failure", test: @, error: @error
+        when "skipped"
+          yield type: "test:skipped", test: @
+        else
+          yield type: "test:pending", test: @
     else
       yield from []
 

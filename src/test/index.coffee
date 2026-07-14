@@ -31,13 +31,16 @@ test.define [ isObject ], ({ description, options... }) ->
 
 # 2. 2-argument definitions with options as first argument
 test.define [ isObject, isAny ], ({ description, options... }, definition ) ->
-  ComputedTest.make description, definition, { defaults..., options... }
+  ComputedTest.make description, definition,
+    { defaults..., options... }
 
 test.define [ isObject, isIterable ], ({ description, options... }, definition ) ->
-  TestGroup.make description, definition, { defaults..., options... }
+  TestGroup.make description, definition,
+    { defaults..., options... }
 
 test.define [ isObject, isFunction ], ({ description, options... }, definition ) ->
-  RunnableTest.make description, definition, { defaults..., options... }
+  RunnableTest.make description, definition,
+    { defaults..., options... }
 
 # 3. 2-argument definitions with description as first argument
 test.define [ String, isAny ], ( description, definition ) ->
@@ -54,13 +57,15 @@ test.define [ String, isObject ], ( description, options ) ->
 
 # 4. 3-argument definitions
 test.define [ String, isObject, isAny ], ( description, options, definition ) ->
-  ComputedTest.make description, definition, { defaults..., options... }
+  ComputedTest.make description, definition,
+    { defaults..., options... }
 
 test.define [ String, isObject, isIterable ], ( description, options, definition ) ->
-  TestGroup.make description, definition, { defaults..., options... }
+  TestGroup.make description, definition,
+    { defaults..., options... }
 
 test.define [ String, isObject, isFunction ], ( description, options, definition ) ->
-  RunnableTest.make description, definition, { defaults..., options... }
+  RunnableTest.make description, options, definition
 
 export {
   AbstractTest
