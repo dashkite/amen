@@ -59,25 +59,35 @@ do ->
 2. Pass the unawaited suite instance directly to `print`.
 3. Await the `print` promise. The console reporter consumes and live-renders the async iteration events in real-time.
 
-### 3. Filtering Test Execution by Environment Variables
+### 3. Filtering Test Execution (Targeting)
 
 #### Task
-Run a specific subset of tests locally or in CI without modifying test code files.
+Run a specific subset of tests dynamically without modifying test case options.
 
 #### How the software enables the task
-Attach tags to test options or filter by description substring. Then run your test suite with the `targets` environment variable.
+Attach tags to test options. Set the active targets on a parent group or the root suite using the `active` option or the `active` instance property. 
+
+If you want to support environment variables, you can explicitly read them in your runner file and pass them to the root suite options.
 
 #### Code Example
 ```coffeescript
-test "Full Suite", [
+import { test, print } from "@dashkite/amen"
+
+# Define the suite with targeted tests
+suite = test "Full Suite", [
   test "Quick Check", -> assert true
-  test "Slow Integration Check", { targets: [ "slow", "integration" ] }, ->
+  test "Slow Integration Check", { targets: [ "slow" ] }, ->
     # slow operations here
     assert true
 ]
+
+# Configure the active targets at runtime (e.g. from an env variable)
+suite.active = process.env.targets?.split /\s+/
+
+await print suite
 ```
 
-To run only the slow checks, execute the test script from the terminal:
+Run only the slow checks from the terminal:
 
 ```bash
 targets="slow" node build/node/test/index.js
@@ -85,5 +95,5 @@ targets="slow" node build/node/test/index.js
 
 #### Algorithm
 1. Add a `targets` option (string or array of strings) to targeted tests or groups.
-2. Set the `targets` (or `TARGETS`, `target`, `TARGET`) environment variable when running the script.
+2. Set the `active` option on the root or parent test suite, or set the `active` property dynamically on the suite instance at runtime.
 3. Amen dynamically checks matches on description names and tags, propagating skipped states down to nested child tests when targets don't match.

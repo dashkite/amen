@@ -1,47 +1,49 @@
 import { test } from "./test"
-import { isString } from "@dashkite/joy"
+import { isString, isObject } from "@dashkite/joy"
 
-getEnvTargets = ->
-  envStr = if process? then process.env.targets ? process.env.TARGETS ? process.env.target ? process.env.TARGET
-  if ( envStr? ) && ( envStr.trim() != "" )
-    envStr.trim().split /\s+/
-  else
-    []
+getActiveTargets = ( node ) ->
+  current = node
+  while current?
+    active = current.options?.active ? current.active
+    if active?
+      return if Array.isArray active then active else [ active ]
+    current = current.parent
+  []
 
-matchTest = ( node, envTargets ) ->
+matchTest = ( node, active ) ->
   (( node.options?.targets? ) && do ->
     testTargets = if Array.isArray node.options.targets then node.options.targets else [ node.options.targets ]
-    testTargets.some ( t ) -> t in envTargets
+    testTargets.some ( t ) -> t in active
   ) || ( node.description? && do ->
     desc = node.description.toLowerCase()
-    envTargets.some ( t ) -> desc.includes t.toLowerCase()
+    active.some ( t ) -> desc.includes t.toLowerCase()
   )
 
-hasMatchingDescendant = ( node, envTargets ) ->
+hasMatchingDescendant = ( node, active ) ->
   node.children.some ( child ) ->
-    ( matchTest child, envTargets ) || ( hasMatchingDescendant child, envTargets )
+    ( matchTest child, active ) || ( hasMatchingDescendant child, active )
 
 shouldRun = ( node ) ->
-  envTargets = getEnvTargets()
+  active = getActiveTargets node
 
-  if envTargets.length == 0
-    if node.options?.targets?
-      testTargets = if Array.isArray node.options.targets then node.options.targets else [ node.options.targets ]
-      testTargets.length == 0
-    else
-      true
+  if active.length == 0
+    true
   else
-    ( matchTest node, envTargets ) ||
-      (( node.children?.length > 0 ) && ( hasMatchingDescendant node, envTargets ))
+    ( matchTest node, active ) ||
+      (( node.children?.length > 0 ) && ( hasMatchingDescendant node, active ))
 
 target = ( targets, args... ) ->
-  envTargets = getEnvTargets()
-  targetList = if Array.isArray targets then targets else [ targets ]
-
-  if targetList.some ( t ) -> t in envTargets
-    test args...
+  if isString args[ 0 ]
+    if isObject args[ 1 ]
+      [ description, options, definition ] = args
+      test description, { targets, options... }, definition
+    else
+      [ description, definition ] = args
+      test description, { targets }, definition
+  else if isObject args[ 0 ]
+    [ options, definition ] = args
+    test { targets, options... }, definition
   else
-    description = if isString args[ 0 ] then args[ 0 ] else args[ 0 ]?.description
-    test description, undefined
+    test args...
 
 export { shouldRun, target }

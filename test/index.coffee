@@ -74,9 +74,7 @@ do ->
 
     test "targeting tests", ->
       await test "tag targeting options filter tests", ->
-        process.env.targets = "deploy"
-        
-        suite = test "targeted suite", [
+        suite = test "targeted suite", { active: "deploy" }, [
           test "deploy test", { targets: ["deploy"] }, -> true
           test "other test", { targets: ["other"] }, -> true
           test "untargeted test", -> true
@@ -87,23 +85,18 @@ do ->
         assert.equal suite.children[0].status, "passed"
         assert.equal suite.children[1].status, "skipped"
         assert.equal suite.children[2].status, "skipped"
-        
-        delete process.env.targets
 
       await test "targeting by description name", ->
-        process.env.targets = "special"
-        
         suite = test "name suite", [
           test "run special feature", -> true
           test "run standard feature", -> true
         ]
+        suite.active = "special"
         
         await suite
         
         assert.equal suite.children[0].status, "passed"
         assert.equal suite.children[1].status, "skipped"
-        
-        delete process.env.targets
 
   ]
 

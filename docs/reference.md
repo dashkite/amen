@@ -18,6 +18,7 @@ $test: \text{description}, \text{options}, \text{definition} \dashrightarrow \te
 - **options**: An object containing configuration properties. When no separate description string is passed, the options object must include the `description` property to name the test. Supported properties:
   - `description`: The test name or description.
   - `targets`: A tag string or array of tags for conditional test targeting.
+  - `active`: A tag string or array of tags representing the active target filters. Only tests matching these targets will run.
   - `wait`: A timeout duration limit in milliseconds for asynchronous executions.
 - **definition**: One of:
   - A function (synchronous, promise-returning, generator, or async generator) for a standard test case.
@@ -64,7 +65,7 @@ await print test "My Suite", [
 
 ### target
 
-A conditional helper that executes test arguments only if matching tags or substrings are provided in the environment variable.
+A conditional helper that injects targeting tags into the test options. The test will only execute if its targets match the active targets of its parent group.
 
 $target: \text{targets}, \text{args} \dashrightarrow \text{test}$
 
@@ -76,7 +77,7 @@ $target: \text{targets}, \text{args} \dashrightarrow \text{test}$
 ```coffeescript
 import { target } from "@dashkite/amen"
 
-# Only runs if target environment variable matches "deploy"
+# Only runs if the parent group's active target contains "deploy"
 target "deploy", "Deploy DB Schema", ->
   # ...
 ```
