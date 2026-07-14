@@ -1,24 +1,25 @@
 import { test } from "./test"
 import { isString, isObject } from "@dashkite/joy"
 
+toArray = ( value ) ->
+  if Array.isArray value
+    value
+  else
+    [ value ]
+
 getActiveTargets = ( node ) ->
   current = node
   result = undefined
   while ( current? ) && ( ! result? )
     active = current.options?.active ? current.active
     if active?
-      result = if Array.isArray active then active else [ active ]
+      result = toArray active
     current = current.parent
   result ? []
 
 matchTest = ( node, active ) ->
   (( node.options?.targets? ) && do ->
-    testTargets =
-      if Array.isArray node.options.targets
-        node.options.targets
-      else
-        [ node.options.targets ]
-    testTargets.some ( t ) -> t in active
+    ( toArray node.options.targets ).some ( t ) -> t in active
   ) || ( node.description? && do ->
     desc = node.description.toLowerCase()
     active.some ( t ) -> desc.includes t.toLowerCase()
