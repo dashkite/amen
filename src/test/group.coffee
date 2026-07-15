@@ -2,21 +2,17 @@ import { ReactorQueue } from "@dashkite/river"
 import { AbstractTest } from "./abstract"
 import { ComputedTest } from "./computed"
 
-concurrentMerge = ( iterators ) ->
+concurrentMerge = ( iterables ) ->
   queue = ReactorQueue.make()
-  active = iterators.length
+  active = iterables.length
 
-  for iterator in iterators
-    do ( iterator ) ->
+  for iterable in iterables
+    do ( iterable ) ->
       try
-        loop
-          { value, done } = await iterator.next()
-          if value?
-            queue.enqueue value
-          if done
-            break
+        for await value from iterable
+          queue.enqueue value
       catch error
-        queue.enqueue type: "test:failure", test: iterator.test, error: error
+        queue.enqueue type: "test:failure", test: iterable, error: error
       finally
         active--
         if active == 0
@@ -49,9 +45,11 @@ class TestGroup extends AbstractTest
   _iterate: ->
     runPromise = @run()
     yield type: "group:start", test: @
-    childrenIterators =
-      ( child[ Symbol.asyncIterator ]() for child in @children )
-    yield from concurrentMerge childrenIterators
+    try
+      yield from concurrentMerge @children
+    catch error
+      if error.message != "queue closed with pending items"
+        throw error
     await runPromise
     yield type: "group:end", test: @
 
