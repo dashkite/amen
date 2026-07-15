@@ -34,15 +34,14 @@ class RunnableTest extends AbstractTest
       try
         result = @definition()
 
-        if result?
-          if isThenable result
-            await timeout @options.wait, result
-          else if isIterable result
-            undefined for value from result
-          else if isReactive result
-            await timeout @options.wait, do ->
-              undefined for await value from result
-              undefined
+        if isThenable result
+          await timeout @options.wait, result
+        else if isIterable result
+          undefined for value from result
+        else if isReactive result
+          await timeout @options.wait, do ->
+            undefined for await value from result
+            undefined
 
         @_pass true
       catch error

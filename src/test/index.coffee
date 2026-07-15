@@ -3,11 +3,9 @@ import {
   isString
   isObject
   isFunction
-  isIterable as joyIsIterable
+  isIterable
   isThenable
 } from "@dashkite/joy"
-
-isIterable = ( value ) -> ( value? ) && joyIsIterable value
 
 import { AbstractTest } from "./abstract"
 import { TestGroup } from "./group"
