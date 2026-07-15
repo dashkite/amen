@@ -2,8 +2,7 @@ import { fork } from "child_process"
 import { fileURLToPath } from "url"
 import { dirname, join } from "path"
 import assert from "@dashkite/assert"
-import { test, print as localPrint } from "../src"
-import print from "stable-amen-console"
+import { test, print } from "../src"
 import "./coverage"
 
 filename = fileURLToPath import.meta.url
@@ -25,7 +24,7 @@ run = ( name ) ->
 
 do ->
 
-  print await test "Amen Test Runner", [
+  await print test "Amen Test Runner", [
 
     test "passing suite exits with 0", ->
       { code } = await run "passing"
@@ -45,9 +44,14 @@ do ->
         test "test B", -> true
       ]
       
+      # We must run it to generate events
+      runPromise = suite.run()
+      
       for await event from suite
         events.push type: event.type, description: event.test.description
         
+      await runPromise
+      
       assert.deepEqual events, [
         { type: "group:start", description: "sub-suite" }
         { type: "test:start", description: "test A" }
@@ -61,15 +65,14 @@ do ->
       suite = test "live print sub-suite", [
         test "test C", -> true
       ]
-      # Await print on the un-resolved test object to run the live iterator code path
-      await localPrint suite
+      await print suite
 
     test "iterable support for group definition", ->
       suite = test "set suite", new Set [
         test "test in set", -> true
       ]
       
-      await suite
+      await suite.run()
       assert.equal suite.children[0].status, "passed"
 
     test "targeting tests", ->
@@ -80,7 +83,7 @@ do ->
           test "untargeted test", -> true
         ]
         
-        await suite
+        await suite.run()
         
         assert.equal suite.children[0].status, "passed"
         assert.equal suite.children[1].status, "skipped"
@@ -93,10 +96,8 @@ do ->
         ]
         suite.active = "special"
         
-        await suite
+        await suite.run()
         
         assert.equal suite.children[0].status, "passed"
         assert.equal suite.children[1].status, "skipped"
-
   ]
-

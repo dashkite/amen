@@ -1,4 +1,5 @@
 import { AbstractTest } from "./abstract"
+import { chainable } from "./chainable"
 import { shouldRun } from "../targets"
 import {
   isIterable
@@ -19,33 +20,48 @@ timeout = ( wait, promise ) ->
   else
     promise
 
-class RunnableTest extends AbstractTest
+class RunnableTest extends chainable AbstractTest
   @make: ( description, definition, options = {} ) ->
     Object.assign ( new @ ), { description, definition, options }
 
   run: ->
-    @status = "running"
-    if ! shouldRun @
-      @status = "skipped"
-      @result = [ @description, undefined ]
-      @_resolve @result
+    if @status == "skipped"
+      @_resolve @
       @promise
     else
-      try
-        result = @definition()
+      @status = "running"
+      if ! shouldRun @
+        @status = "skipped"
+        @_resolve @
+        @promise
+      else
+        try
+          result = @definition.call @
 
-        if isThenable result
-          await timeout @options.wait, result
-        else if isIterable result
-          undefined for value from result
-        else if isReactive result
-          await timeout @options.wait, do ->
-            undefined for await value from result
-            undefined
+          resolvedValue = undefined
+          if isThenable result
+            resolvedValue = await timeout @options.wait, result
+          else if isIterable result
+            undefined for value from result
+          else if isReactive result
+            resolvedValue = await timeout @options.wait, do ->
+              undefined for await value from result
+              undefined
+          else
+            resolvedValue = result
 
-        @_pass true
-      catch error
-        @_fail error
+          if resolvedValue == Symbol.for "skipped"
+            @status = "skipped"
+          else if resolvedValue == Symbol.for "pending"
+            @status = "pending"
+
+          if @status == "running"
+            @_pass()
+          else
+            @_resolve @
+            @promise
+        catch error
+          @_fail error
 
 export { RunnableTest }
 export default RunnableTest

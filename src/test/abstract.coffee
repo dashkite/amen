@@ -7,15 +7,10 @@ class AbstractTest
     @promise = new Promise ( resolve, reject ) =>
       @_resolve = resolve
       @_reject = reject
-      queueMicrotask =>
-        if ( ! @parent? ) && ( @status == "pending" )
-          @run()
 
-  then: ( onFulfilled, onRejected ) ->
-    @promise.then onFulfilled, onRejected
 
-  catch: ( onRejected ) ->
-    @promise.catch onRejected
+
+
 
   [ Symbol.asyncIterator ]: ->
     iterator = @_iterate()
@@ -23,30 +18,14 @@ class AbstractTest
     iterator
 
   _fail: ( error ) ->
-    if process?
-      process.exitCode = 1
     @status = "failed"
     @error = error
-    failureResult =
-      success: false
-      message: error.message
-      stack: error.stack
-    @result =
-      if @description?
-        [ @description, failureResult ]
-      else
-        failureResult
-    @_resolve @result
+    @_resolve @
     @promise
 
-  _pass: ( value ) ->
+  _pass: ->
     @status = "passed"
-    @result =
-      if @description?
-        [ @description, value ]
-      else
-        value
-    @_resolve @result
+    @_resolve @
     @promise
 
   _iterate: ->

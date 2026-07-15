@@ -8,6 +8,7 @@ do ->
     test "failing async test", ->
       new Promise ( _, reject ) ->
         setTimeout (-> reject new Error "oops"), 10
-    test "invalid definition", 123
+    test "invalid definition", ->
+      throw new Error "Invalid test definition"
   ]
 

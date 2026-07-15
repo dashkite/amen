@@ -1,25 +1,32 @@
-getIndent = ( test ) ->
-  indent = ""
-  parent = test.parent
-  while parent?
-    indent += "  "
-    parent = parent.parent
-  indent
+printTree = ( test, indent = "" ) ->
+  if test.description?
+    if test.children?
+      console.error indent + test.description
+      for child in test.children
+        printTree child, ( indent + "  " )
+    else
+      status = test.status
+      if status == "passed"
+        console.error indent + "pass - #{test.description}"
+      else if status == "failed"
+        if process?
+          process.exitCode = 1
+        msg = if test.error?.message? then " (#{test.error.message})" else ""
+        console.error indent + "fail - #{test.description}#{msg}"
+      else if status == "skipped"
+        console.error indent + "skipped - #{test.description}"
+      else
+        console.error indent + "pending - #{test.description}"
+  else
+    if test.children?
+      for child in test.children
+        printTree child, indent
 
 print = ( target, indent = "" ) ->
   if target?[ Symbol.asyncIterator ]?
     for await event from target
-      indentation = getIndent event.test
-      switch event.type
-        when 'group:start'
-          console.error indentation, event.test.description
-        when 'test:success'
-          console.error indentation, "pass - #{event.test.description}"
-        when 'test:failure'
-          msg = if event.error?.message? then " (#{event.error.message})" else ""
-          console.error indentation, "fail - #{event.test.description}#{msg}"
-        when 'test:skipped', 'test:pending'
-          console.error indentation, "pending - #{event.test.description}"
+      undefined
+    printTree target, indent
   else if Array.isArray target
     [ description, result ] = target
     if Array.isArray result
@@ -31,10 +38,11 @@ print = ( target, indent = "" ) ->
         if result?
           if result == true
             "pass - #{description}"
-          else if ( result.message? ) && ( result.message != "" )
-            "fail - #{description} (#{result.message})"
           else
-            "fail - #{description}"
+            if process?
+              process.exitCode = 1
+            msg = if result.message? && result.message != "" then " (#{result.message})" else ""
+            "fail - #{description}#{msg}"
         else
           "pending - #{description}"
 

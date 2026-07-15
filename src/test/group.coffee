@@ -1,6 +1,6 @@
 import { ReactorQueue } from "@dashkite/river"
 import { AbstractTest } from "./abstract"
-import { ComputedTest } from "./computed"
+import { chainable } from "./chainable"
 
 concurrentMerge = ( iterables ) ->
   queue = ReactorQueue.make()
@@ -20,25 +20,22 @@ concurrentMerge = ( iterables ) ->
 
   queue
 
-class TestGroup extends AbstractTest
+class TestGroup extends chainable AbstractTest
   @make: ( description, definition, options = {} ) ->
     instance = Object.assign ( new @ ), { description, definition, options }
     instance.children = []
     for child from definition
-      node =
-        if child instanceof AbstractTest
-          child
-        else
-          ComputedTest.make child
-      node.parent = instance
-      instance.children.push node
+      unless child instanceof AbstractTest
+        throw new Error "Invalid child test: must be an instance of AbstractTest"
+      child.parent = instance
+      instance.children.push child
     instance
 
   run: ->
     @status = "running"
     try
-      childResults = await Promise.all ( child.run() for child in @children )
-      @_pass childResults
+      await Promise.all ( child.run() for child in @children )
+      @_pass()
     catch error
       @_fail error
 
