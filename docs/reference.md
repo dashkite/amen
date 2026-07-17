@@ -104,10 +104,14 @@ $children \to \text{array}$
 
 #### Methods
 
+$before: \text{callback} \to \text{test}$
+$after: \text{callback} \to \text{test}$
 $run: \dashrightarrow \text{promise}$
 $then: \text{on\_fulfilled}, \text{on\_rejected} \dashrightarrow \text{promise}$
 $catch: \text{on\_rejected} \dashrightarrow \text{promise}$
 
+- **before**: Registers a synchronous or asynchronous callback to run before the test execution begins. The context `this` (`@`) within the callback is bound to the test instance. Returns the test instance for method chaining.
+- **after**: Registers a synchronous or asynchronous callback to run in a `finally` block after the test execution completes, regardless of success or failure. The context `this` (`@`) within the callback is bound to the test instance. Teardown failures in `after` hooks fail the test. Returns the test instance for method chaining.
 - **run**: Executes the test definition. Automatically wrapped in a `once` combinator so execution is cached and safe.
 - **then / catch**: Promise integration allowing instances to be awaited.
 

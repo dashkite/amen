@@ -97,3 +97,42 @@ targets="slow" node build/node/test/index.js
 1. Add a `targets` option (string or array of strings) to targeted tests or groups.
 2. Set the `active` option on the root or parent test suite, or set the `active` property dynamically on the suite instance at runtime.
 3. Amen dynamically checks matches on description names and tags, propagating skipped states down to nested child tests when targets don't match.
+
+### 4. Using Setup and Teardown Hooks
+
+#### Task
+Perform setup and teardown actions before and after executing a test suite or specific test cases.
+
+#### How the software enables the task
+Use the `.before(callback)` and `.after(callback)` methods on any test instance. These methods register setup and teardown callbacks (synchronous or asynchronous) and return the test instance for fluent chaining. Teardown hooks run inside a `finally` block, ensuring they execute even if the test body or setup hooks throw an error.
+
+#### Code Example
+```coffeescript
+import assert from "assert"
+import { test, print } from "@dashkite/amen"
+
+# Mock database resource
+database =
+  connect: -> new Promise ( resolve ) -> setTimeout resolve, 10
+  disconnect: -> new Promise ( resolve ) -> setTimeout resolve, 10
+  query: -> [ { id: 1, val: "foo" } ]
+
+suite = test "Database Query Tests", [
+  test "reads records", ->
+    records = database.query()
+    assert.equal records.length, 1
+]
+
+# Chain setup and teardown hooks
+suite
+  .before -> await database.connect()
+  .after -> await database.disconnect()
+
+await print suite
+```
+
+#### Algorithm
+1. Define a test or test group using the `test` factory.
+2. Chain `.before(callback)` to register an initialization function. The context `this` (`@`) inside the callback will point to the test instance.
+3. Chain `.after(callback)` to register a cleanup function.
+4. The runner invokes the setup hook, executes the test body, and invokes the teardown hook inside a `finally` block.
