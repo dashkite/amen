@@ -62,7 +62,7 @@ The basic intuition for Amen is that test frameworks should get out of the way a
 
 Async functions make it simple to handle asynchronous testing. Any test definition can return a Promise, a Generator, or an Async Generator, which Amen will execute and consume.
 
-Amen is extremely small and extensible. Every test node implements `[Symbol.asyncIterator]` to stream execution events in real-time. For backward compatibility, the test node is also a Thenable that resolves to a nested result tree array.
+Amen is extremely small and extensible. Every test node implements `[Symbol.asyncIterator]` to stream execution events in real-time.
 
 ## Other Resources
 
