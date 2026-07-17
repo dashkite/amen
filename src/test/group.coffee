@@ -31,13 +31,14 @@ class TestGroup extends chainable AbstractTest
       instance.children.push child
     instance
 
-  run: ->
-    @status = "running"
-    try
-      await Promise.all ( child.run() for child in @children )
-      @_pass()
-    catch error
-      @_fail error
+  count: ->
+    sum = 0
+    for child in @children
+      sum += child.count()
+    sum
+
+  apply: ->
+    await Promise.all ( child.run() for child in @children )
 
   _iterate: ->
     runPromise = @run()

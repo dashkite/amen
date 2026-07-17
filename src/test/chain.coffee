@@ -15,29 +15,29 @@ class TestChain extends AbstractTest
     else
       throw new Error "and: argument must be an instance of AbstractTest"
 
-  run: ->
-    @status = "running"
-    try
-      failed = false
-      aborted = false
-      for child in @children
-        if aborted
-          child.status = "skipped"
-          child._resolve child
-          await child.promise
-        else
-          await child.run()
-          if child.status == "failed"
-            failed = true
-            aborted = true
-          else if child.status == "skipped"
-            aborted = true
-      if failed
-        @_fail new Error "Chain failed"
+  count: ->
+    sum = 0
+    for child in @children
+      sum += child.count()
+    sum
+
+  apply: ->
+    failed = false
+    aborted = false
+    for child in @children
+      if aborted
+        child.status = "skipped"
+        child._resolve child
+        await child.promise
       else
-        @_pass()
-    catch error
-      @_fail error
+        await child.run()
+        if child.status == "failed"
+          failed = true
+          aborted = true
+        else if child.status == "skipped"
+          aborted = true
+    if failed
+      throw new Error "Chain failed"
 
   _iterate: ->
     if @description?

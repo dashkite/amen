@@ -24,44 +24,31 @@ class RunnableTest extends chainable AbstractTest
   @make: ( description, definition, options = {} ) ->
     Object.assign ( new @ ), { description, definition, options }
 
-  run: ->
-    if @status == "skipped"
-      @_resolve @
-      @promise
+  apply: ->
+    if ! shouldRun @
+      @status = "skipped"
     else
-      @status = "running"
-      if ! shouldRun @
-        @status = "skipped"
-        @_resolve @
-        @promise
+      result = @definition.call @
+
+      resolvedValue = if isThenable result
+        await timeout @options.wait, result
+      else if isIterable result
+        for value from result
+          undefined
+        undefined
+      else if isReactive result
+        await timeout @options.wait, ( do ->
+          for await value from result
+            undefined
+          undefined
+        )
       else
-        try
-          result = @definition.call @
+        result
 
-          resolvedValue = undefined
-          if isThenable result
-            resolvedValue = await timeout @options.wait, result
-          else if isIterable result
-            undefined for value from result
-          else if isReactive result
-            resolvedValue = await timeout @options.wait, do ->
-              undefined for await value from result
-              undefined
-          else
-            resolvedValue = result
-
-          if resolvedValue == Symbol.for "skipped"
-            @status = "skipped"
-          else if resolvedValue == Symbol.for "pending"
-            @status = "pending"
-
-          if @status == "running"
-            @_pass()
-          else
-            @_resolve @
-            @promise
-        catch error
-          @_fail error
+      if resolvedValue == Symbol.for "skipped"
+        @status = "skipped"
+      else if resolvedValue == Symbol.for "pending"
+        @status = "pending"
 
 export { RunnableTest }
 export default RunnableTest

@@ -7,6 +7,39 @@ class AbstractTest
     @promise = new Promise ( resolve, reject ) =>
       @_resolve = resolve
       @_reject = reject
+    @_before = []
+    @_after = []
+
+  before: ( callback ) ->
+    @_before.push callback
+    @
+
+  after: ( callback ) ->
+    @_after.push callback
+    @
+
+  run: ->
+    if @status == "skipped"
+      @_resolve @
+      @promise
+    else
+      @status = "running"
+      try
+        for hook in @_before
+          await hook.call @
+        
+        await @apply()
+        
+        if @status == "running"
+          @_pass()
+      catch error
+        @_fail error
+      finally
+        for hook in @_after
+          try
+            await hook.call @
+          catch hookError
+            @_fail hookError
 
 
 
@@ -27,6 +60,12 @@ class AbstractTest
     @status = "passed"
     @_resolve @
     @promise
+
+  count: ->
+    if @description?
+      1
+    else
+      0
 
   _iterate: ->
     if @description?
