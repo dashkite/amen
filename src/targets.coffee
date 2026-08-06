@@ -37,6 +37,14 @@ hasMatchingDescendant = ( node, active ) ->
   node.children.some ( child ) ->
     ( matchTest child, active ) || ( hasMatchingDescendant child, active )
 
+hasMatchingAncestor = ( node, active ) ->
+  current = node.parent
+  while current?
+    if matchTags current, active
+      return true
+    current = current.parent
+  false
+
 shouldRun = ( node ) ->
   active = getActiveTargets node
 
@@ -44,6 +52,7 @@ shouldRun = ( node ) ->
     true
   else
     ( matchTest node, active ) ||
+      ( hasMatchingAncestor node, active ) ||
       (( node.children?.length > 0 ) && ( hasMatchingDescendant node, active ))
 
 target = ( targets, args... ) ->
