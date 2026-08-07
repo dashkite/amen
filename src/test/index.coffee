@@ -55,7 +55,8 @@ test.define [ String, isObject, isIterable ], ( description, options, definition
     { defaults..., options... }
 
 test.define [ String, isObject, isFunction ], ( description, options, definition ) ->
-  RunnableTest.make description, options, definition
+  RunnableTest.make description, definition,
+    { defaults..., options... }
 
 export {
   AbstractTest
