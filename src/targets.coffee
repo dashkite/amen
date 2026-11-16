@@ -17,6 +17,17 @@ getActiveTargets = ( node ) ->
     current = current.parent
   result ? []
 
+getLineage = ( node ) ->
+  lineage = []
+  current = node
+  while current?
+    lineage.push current
+    current = current.parent
+  lineage
+
+getTargetedLineage = ( node ) ->
+  ( getLineage node ).filter ( item ) -> item.options?.targets?
+
 matchTags = ( node, active ) ->
   if node.options?.targets?
     ( toArray node.options.targets ).some ( tag ) -> tag in active
@@ -25,25 +36,28 @@ matchTags = ( node, active ) ->
 
 matchDescription = ( node, active ) ->
   if node.description?
-    desc = node.description.toLowerCase()
-    active.some ( target ) -> desc.includes target.toLowerCase()
+    description = node.description.toLowerCase()
+    active.some ( target ) -> description.includes target.toLowerCase()
   else
     false
 
-matchTest = ( node, active ) ->
-  ( matchTags node, active ) || ( matchDescription node, active )
+matchLineageTags = ( targeted, active ) ->
+  ( targeted.length > 0 ) &&
+    ( targeted.every ( item ) -> matchTags item, active )
+
+matchUntargetedDescription = ( node, active ) ->
+  ( ! node.options?.targets? ) && ( matchDescription node, active )
+
+matchLineage = ( node, active ) ->
+  targeted = getTargetedLineage node
+  ( matchLineageTags targeted, active ) ||
+    ( matchUntargetedDescription node, active )
 
 hasMatchingDescendant = ( node, active ) ->
-  node.children.some ( child ) ->
-    ( matchTest child, active ) || ( hasMatchingDescendant child, active )
-
-hasMatchingAncestor = ( node, active ) ->
-  current = node.parent
-  while current?
-    if matchTags current, active
-      return true
-    current = current.parent
-  false
+  ( Boolean node.children?.length ) &&
+    ( node.children.some ( child ) ->
+      ( matchLineage child, active ) || ( hasMatchingDescendant child, active )
+    )
 
 shouldRun = ( node ) ->
   active = getActiveTargets node
@@ -51,9 +65,20 @@ shouldRun = ( node ) ->
   if active.length == 0
     true
   else
-    ( matchTest node, active ) ||
-      ( hasMatchingAncestor node, active ) ||
-      (( node.children?.length > 0 ) && ( hasMatchingDescendant node, active ))
+    ( matchLineage node, active ) || ( hasMatchingDescendant node, active )
+
+shouldRunHook = ( node, options ) ->
+  if ! options?.targets?
+    true
+  else
+    active = getActiveTargets node
+    if active.length == 0
+      true
+    else
+      targeted = getTargetedLineage node
+      ancestorsMatch =
+        ( targeted.length == 0 ) || ( matchLineageTags targeted, active )
+      ancestorsMatch && ( matchTags { options }, active )
 
 target = ( targets, args... ) ->
   if isString args[ 0 ]
@@ -69,4 +94,4 @@ target = ( targets, args... ) ->
   else
     test args...
 
-export { shouldRun, target }
+export { shouldRun, shouldRunHook, target }

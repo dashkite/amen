@@ -37,18 +37,29 @@ class TestGroup extends chainable AbstractTest
       sum += child.count()
     sum
 
+  _skip: ->
+    for child in @children
+      child._skip()
+    super()
+
   apply: ->
     await Promise.all ( child.run() for child in @children )
 
   _iterate: ->
     runPromise = @run()
     yield type: "group:start", test: @
-    try
-      yield from concurrentMerge @children
-    catch error
-      if error.message != "queue closed with pending items"
-        throw error
+    await @_ready
+    if @_beforeError?
+      yield type: "test:failure", test: @, error: @_beforeError
+    else
+      try
+        yield from concurrentMerge @children
+      catch error
+        if error.message != "queue closed with pending items"
+          throw error
     await runPromise
+    if @_afterError?
+      yield type: "test:failure", test: @, error: @_afterError
     yield type: "group:end", test: @
 
 export { TestGroup }

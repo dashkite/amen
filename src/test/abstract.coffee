@@ -1,4 +1,13 @@
-import { once } from "@dashkite/joy"
+import { once, isFunction } from "@dashkite/joy"
+import { shouldRunHook } from "../targets"
+
+parseHook = ( args ) ->
+  if isFunction args[ 0 ]
+    options: {}
+    callback: args[ 0 ]
+  else
+    [ options, callback ] = args
+    { options: ( options ? {} ), callback }
 
 class AbstractTest
   constructor: ->
@@ -7,39 +16,55 @@ class AbstractTest
     @promise = new Promise ( resolve, reject ) =>
       @_resolve = resolve
       @_reject = reject
+    @_ready = new Promise ( resolve ) =>
+      @_markReady = resolve
     @_before = []
     @_after = []
 
-  before: ( callback ) ->
-    @_before.push callback
+  before: ( args... ) ->
+    @_before.push parseHook args
     @
 
-  after: ( callback ) ->
-    @_after.push callback
+  after: ( args... ) ->
+    @_after.push parseHook args
     @
 
   run: ->
     if @status == "skipped"
+      @_markReady()
       @_resolve @
       @promise
     else
       @status = "running"
+      ready = false
       try
-        for hook in @_before
-          await hook.call @
-        
+        for { options, callback } in @_before
+          if shouldRunHook @, options
+            await callback.call @
+
+        ready = true
+        @_markReady()
         await @apply()
-        
+
         if @status == "running"
           @_pass()
+        else
+          @_resolve @
       catch error
+        unless ready
+          @_beforeError = error
+          @_hookError = error
+          @_markReady()
         @_fail error
       finally
-        for hook in @_after
-          try
-            await hook.call @
-          catch hookError
-            @_fail hookError
+        for { options, callback } in @_after
+          if shouldRunHook @, options
+            try
+              await callback.call @
+            catch hookError
+              @_afterError = hookError
+              @_hookError ?= hookError
+              @_fail hookError
 
 
 
@@ -58,6 +83,11 @@ class AbstractTest
 
   _pass: ->
     @status = "passed"
+    @_resolve @
+    @promise
+
+  _skip: ->
+    @status = "skipped"
     @_resolve @
     @promise
 
