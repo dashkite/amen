@@ -21,6 +21,9 @@ test = Generic.make
     throw new Error "test: unsupported argument signature"
 
 # 1. Single-argument definitions (checked last)
+test.define [ isIterable ], ( definition ) ->
+  TestGroup.make undefined, definition, defaults
+
 test.define [ String ], ( description ) ->
   PendingTest.make description, defaults
 

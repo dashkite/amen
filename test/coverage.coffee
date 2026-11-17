@@ -54,6 +54,17 @@ do ->
         chain = a.and(b)
         await chain.run()
         assert.deepEqual order, [ 1, 2 ]
+
+      test "skips chained group children when predecessor is skipped", ->
+        first = RunnableTest.make "first", -> Symbol.for "skipped"
+        secondChild = RunnableTest.make "second child", -> true
+        secondGroup = TestGroup.make undefined, [ secondChild ]
+
+        chain = first.and secondGroup
+        await chain.run()
+        assert.equal first.status, "skipped"
+        assert.equal secondGroup.status, "skipped"
+        assert.equal secondChild.status, "skipped"
     ]
 
     test "RunnableTest timeout behavior", [

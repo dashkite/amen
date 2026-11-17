@@ -10,6 +10,7 @@ The main factory function used to define tests. It is implemented as a Generic d
 
 $test: \text{description} \dashrightarrow \text{pending\_test}$
 $test: \text{options} \dashrightarrow \text{pending\_test}$
+$test: \text{definition} \dashrightarrow \text{test}$
 $test: \text{description}, \text{definition} \dashrightarrow \text{test}$
 $test: \text{options}, \text{definition} \dashrightarrow \text{test}$
 $test: \text{description}, \text{options}, \text{definition} \dashrightarrow \text{test}$
@@ -17,13 +18,12 @@ $test: \text{description}, \text{options}, \text{definition} \dashrightarrow \te
 - **description**: A string describing the test or group.
 - **options**: An object containing configuration properties. When no separate description string is passed, the options object must include the `description` property to name the test. Supported properties:
   - `description`: The test name or description.
-  - `targets`: A tag string or array of tags for conditional test targeting.
-  - `active`: A tag string or array of tags representing the active target filters. Only tests matching these targets will run.
+  - `targets`: A tag string or array of tags for conditional test targeting. When multiple nodes in a test's ancestor-to-self lineage define `targets`, **all** targeted nodes in the lineage must match the active targets for the test to run.
+  - `active`: A tag string or array of tags representing the active target filters. Only tests matching these targets (or matching by description when untargeted) will run.
   - `wait`: A timeout duration limit in milliseconds for asynchronous executions.
 - **definition**: One of:
-  - A function (synchronous, promise-returning, generator, or async generator) for a standard test case.
+  - A function (synchronous, promise-returning, generator, or async generator) for a standard test case. Returning `Symbol.for("skipped")` or `Symbol.for("pending")` dynamically marks the test as `"skipped"` or `"pending"`.
   - An iterable of child tests for a group definition.
-  - A raw value or Promise.
 - **test**: An instance of a subclass of `AbstractTest`.
 
 #### Example
@@ -114,16 +114,34 @@ $run: \dashrightarrow \text{promise}$
 
 ### TestGroup
 
-Subclass of `AbstractTest` representing a suite that aggregates child tests. It runs its children in parallel and concurrent-merges their execution event streams.
+Subclass of `AbstractTest` representing a suite that aggregates child tests. It runs its children in parallel and concurrent-merges their execution event streams. Supports `.and(test)` to chain sequential execution into a `TestChain`.
+
+#### Methods
+
+$and: \text{test} \to \text{chain}$
+
+- **and**: Chains another `AbstractTest` instance (or an iterable of `AbstractTest` instances, which is automatically wrapped in an unnamed `TestGroup` for parallel execution) to run sequentially after this group completes, returning a `TestChain`.
 
 ### RunnableTest
 
-Subclass of `AbstractTest` representing a leaf test case with a definition function. Executes synchronous functions, Promises, Generators, and Async Generators with optional timeout handling.
+Subclass of `AbstractTest` representing a leaf test case with a definition function. Executes synchronous functions, Promises, Generators, and Async Generators with optional timeout handling. If the definition resolves to `Symbol.for("skipped")` or `Symbol.for("pending")`, the test status is set to `"skipped"` or `"pending"` respectively. Supports `.and(test)` to chain sequential execution into a `TestChain`.
+
+#### Methods
+
+$and: \text{test} \to \text{chain}$
+
+- **and**: Chains another `AbstractTest` instance (or an iterable of `AbstractTest` instances, which is automatically wrapped in an unnamed `TestGroup` for parallel execution) to run sequentially after this test completes, returning a `TestChain`.
 
 ### PendingTest
 
 Subclass of `AbstractTest` representing a placeholder/pending test that has no definition.
 
-### ComputedTest
+### TestChain
 
-Subclass of `AbstractTest` wrapping raw values, Promises, or arrays without descriptions.
+Subclass of `AbstractTest` representing an ordered sequence of tests created via `.and(test)`. Executes its children sequentially one after another. If any child test fails or is skipped, all subsequent tests in the chain are automatically skipped.
+
+#### Methods
+
+$and: \text{test} \to \text{chain}$
+
+- **and**: Appends another `AbstractTest` instance (or an iterable of `AbstractTest` instances) to the end of the sequential chain and returns the `TestChain` instance.
